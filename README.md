@@ -4,7 +4,14 @@ A local, keyboard-driven flashcard app for memorizing Dutch vocabulary —
 verbs, nouns, adjectives, and adverbs. Runs entirely in the browser: no backend,
 no database, no network calls. Progress is saved in `localStorage`.
 
-## Run
+## Live app
+
+**https://burwei.github.io/dutch-learning/**
+
+Hosted on GitHub Pages. Every push to `main` rebuilds and redeploys automatically
+(see `.github/workflows/deploy.yml`).
+
+## Run locally
 
 ```bash
 npm install
