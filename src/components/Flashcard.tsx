@@ -17,6 +17,7 @@ export function Flashcard(props: Props) {
 
   const front = topic.front(entry)
   const back = topic.back(entry)
+  const example = entry.example?.trim()
 
   // Keyboard controls.
   useEffect(() => {
@@ -63,44 +64,42 @@ export function Flashcard(props: Props) {
 
   return (
     <div className="flashcard-wrap">
-      <div className="card-row">
+      <div
+        className={`card ${flipped ? 'flipped' : ''}`}
+        onClick={() => setFlipped((f) => !f)}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        {mark && <span className={`badge badge-${mark}`}>{mark}</span>}
+        {!flipped ? (
+          <>
+            <span className="card-side-label">Dutch</span>
+            <span className="card-text">{front}</span>
+            <span className="card-hint-text">space / click to flip</span>
+          </>
+        ) : (
+          <>
+            <span className="card-side-label">{topic.label}</span>
+            <span className="card-text">{back}</span>
+            {example && <span className="card-example">{example}</span>}
+          </>
+        )}
+      </div>
+
+      <div className="card-controls">
         <button
           className="zone zone-left"
           onClick={props.onForget}
           title="I don't remember (←)"
-          aria-label="I don't remember"
         >
-          ✗
+          ✗ Don't remember
         </button>
-
-        <div
-          className={`card ${flipped ? 'flipped' : ''}`}
-          onClick={() => setFlipped((f) => !f)}
-          onTouchStart={onTouchStart}
-          onTouchEnd={onTouchEnd}
-        >
-          {mark && <span className={`badge badge-${mark}`}>{mark}</span>}
-          {!flipped ? (
-            <>
-              <span className="card-side-label">Dutch</span>
-              <span className="card-text">{front}</span>
-              <span className="card-hint-text">space / click to flip</span>
-            </>
-          ) : (
-            <>
-              <span className="card-side-label">{topic.label}</span>
-              <span className="card-text">{back}</span>
-            </>
-          )}
-        </div>
-
         <button
           className="zone zone-right"
           onClick={props.onRemember}
           title="I remember (→)"
-          aria-label="I remember"
         >
-          ✓
+          ✓ Remember
         </button>
       </div>
     </div>

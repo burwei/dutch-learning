@@ -1,14 +1,35 @@
 :root {
   --bg: #f5f6f8;
   --card: #ffffff;
+  --card-alt: #fbfcfe;
   --ink: #1f2430;
   --muted: #8a93a3;
   --line: #e2e6ec;
   --accent: #3b6ef0;
   --ok: #1f9d57;
   --bad: #d6453d;
+  --ok-soft: #e3f5ec;
+  --bad-soft: #fdeceb;
   --shadow: 0 8px 30px rgba(20, 30, 60, 0.08);
+  --font-scale: 1;
 }
+
+[data-theme='dark'] {
+  --bg: #14171e;
+  --card: #1e2330;
+  --card-alt: #232a3a;
+  --ink: #e7ebf2;
+  --muted: #8b95a7;
+  --line: #2c3342;
+  --accent: #5b86f5;
+  --ok: #35c07a;
+  --bad: #f06a62;
+  --ok-soft: rgba(53, 192, 122, 0.16);
+  --bad-soft: rgba(240, 106, 98, 0.16);
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+}
+
+body { transition: background-color 0.2s ease, color 0.2s ease; }
 
 * { box-sizing: border-box; }
 
@@ -29,13 +50,12 @@ body {
   min-height: 100%;
 }
 
-/* --- Header ---------------------------------------------------------------- */
-.header {
+/* --- Top bar --------------------------------------------------------------- */
+.topbar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem 1.25rem;
   align-items: center;
-  padding: 0.75rem 1rem;
+  gap: 0.75rem;
+  padding: 0.6rem 0.9rem;
   background: var(--card);
   border-bottom: 1px solid var(--line);
   position: sticky;
@@ -43,9 +63,87 @@ body {
   z-index: 10;
 }
 
-.toggle {
+.menu-btn {
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 0.35rem 0.6rem;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.topbar-context {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.ctx-main { font-weight: 600; font-size: 0.95rem; }
+.ctx-sub { font-size: 0.78rem; color: var(--muted); }
+
+/* --- Drawer ---------------------------------------------------------------- */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 14, 22, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 20;
+}
+.drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 19rem;
+  max-width: 85vw;
+  background: var(--card);
+  border-right: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  transform: translateX(-100%);
+  transition: transform 0.22s ease;
+  z-index: 21;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding: 1rem 1.1rem;
+  overflow-y: auto;
+}
+.drawer.open { transform: translateX(0); }
+
+.drawer-head {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+}
+.drawer-close {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.drawer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.drawer hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 0;
+}
+
+.toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   gap: 0.45rem;
 }
 
@@ -57,19 +155,22 @@ body {
 }
 
 .toggle-buttons {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
   background: var(--bg);
   border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 2px;
+  border-radius: 12px;
+  padding: 4px;
 }
 
 .pill {
+  flex: 1 1 auto;
   border: none;
   background: transparent;
   color: var(--ink);
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
+  padding: 0.4rem 0.7rem;
+  border-radius: 8px;
   font-size: 0.85rem;
   cursor: pointer;
   white-space: nowrap;
@@ -80,8 +181,18 @@ body {
   color: #fff;
 }
 
-.reset {
+.theme-toggle {
   margin-left: auto;
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 8px;
+  padding: 0.35rem 0.55rem;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.reset {
   border: 1px solid var(--line);
   background: var(--card);
   color: var(--bad);
@@ -97,8 +208,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1.5rem 1rem 2.5rem;
-  gap: 1.25rem;
+  justify-content: center;
+  padding: 1rem 1rem 1.25rem;
+  gap: 0.9rem;
 }
 
 .status {
@@ -130,20 +242,27 @@ body {
 }
 
 /* --- Flashcard ------------------------------------------------------------- */
-.flashcard-wrap { width: 100%; max-width: 40rem; }
-
-.card-row {
+/* Card fills most of the screen (desktop + mobile); buttons sit below it. */
+.flashcard-wrap {
+  width: min(92vw, 60rem);
   display: flex;
-  align-items: stretch;
-  gap: 0.6rem;
+  flex-direction: column;
+}
+
+.card-controls {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
 }
 
 .zone {
-  flex: 0 0 3rem;
-  border: 1px dashed var(--line);
+  flex: 1;
+  border: 1px solid var(--line);
   background: var(--card);
-  border-radius: 14px;
-  font-size: 1.4rem;
+  border-radius: 12px;
+  padding: 0.7rem 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
   color: var(--muted);
   cursor: pointer;
 }
@@ -153,7 +272,7 @@ body {
 .card {
   position: relative;
   flex: 1;
-  min-height: 16rem;
+  min-height: min(68vh, 40rem);
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -168,7 +287,7 @@ body {
   user-select: none;
   text-align: center;
 }
-.card.flipped { background: #fbfcfe; }
+.card.flipped { background: var(--card-alt); }
 
 .card-side-label {
   font-size: 0.7rem;
@@ -178,7 +297,8 @@ body {
 }
 
 .card-text {
-  font-size: 2.2rem;
+  /* Auto-scales with the viewport, times the user's adjustable font scale. */
+  font-size: calc(clamp(1.8rem, 5vw, 3.6rem) * var(--font-scale));
   font-weight: 600;
   line-height: 1.2;
   word-break: break-word;
@@ -187,6 +307,15 @@ body {
 .card-hint-text {
   font-size: 0.78rem;
   color: var(--muted);
+}
+
+.card-example {
+  margin-top: 0.5rem;
+  font-size: calc(clamp(1rem, 2.4vw, 1.4rem) * var(--font-scale));
+  font-style: italic;
+  color: var(--muted);
+  line-height: 1.4;
+  max-width: 90%;
 }
 
 .badge {
@@ -199,13 +328,13 @@ body {
   padding: 0.15rem 0.5rem;
   border-radius: 999px;
 }
-.badge-known { background: #e3f5ec; color: var(--ok); }
-.badge-unknown { background: #fdeceb; color: var(--bad); }
+.badge-known { background: var(--ok-soft); color: var(--ok); }
+.badge-unknown { background: var(--bad-soft); color: var(--bad); }
 
 /* --- Typing ---------------------------------------------------------------- */
 .typing {
-  width: 100%;
-  max-width: 40rem;
+  width: min(92vw, 60rem);
+  min-height: min(68vh, 40rem);
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -214,7 +343,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  justify-content: center;
+  gap: 1.25rem;
   text-align: center;
 }
 
@@ -239,10 +369,12 @@ body {
   border-radius: 12px;
   outline: none;
   text-align: center;
+  background: var(--card);
+  color: var(--ink);
 }
 .answer:focus { border-color: var(--accent); }
-.answer.ok { border-color: var(--ok); background: #f2fbf6; }
-.answer.bad { border-color: var(--bad); background: #fdf3f2; }
+.answer.ok { border-color: var(--ok); background: var(--ok-soft); }
+.answer.bad { border-color: var(--bad); background: var(--bad-soft); }
 
 .result { display: flex; flex-direction: column; gap: 0.3rem; }
 .result-mark { font-size: 1.1rem; font-weight: 600; }
@@ -253,9 +385,7 @@ body {
 
 /* --- Legend ---------------------------------------------------------------- */
 .legend {
-  width: 100%;
-  max-width: 40rem;
-  margin-top: auto;
+  width: min(92vw, 60rem);
 }
 .legend-toggle {
   border: none;
@@ -285,8 +415,50 @@ kbd {
   color: var(--ink);
 }
 
-@media (max-width: 480px) {
-  .zone { flex-basis: 2.2rem; font-size: 1.1rem; }
-  .card-text { font-size: 1.8rem; }
-  .reset { margin-left: 0; }
+/* --- Mobile / narrow screens ---------------------------------------------- */
+@media (max-width: 768px) {
+  /* Use the full width on phones; keep the card tall/near-full-screen. */
+  .flashcard-wrap,
+  .typing,
+  .legend {
+    width: 96vw;
+  }
+
+  .main { padding: 0.75rem 0.5rem 1rem; gap: 0.6rem; }
+
+  .card { padding: 1.5rem 1rem; }
+
+  .typing { padding: 1.5rem 1rem; }
+  /* 16px input avoids iOS auto-zoom on focus. */
+  .answer { font-size: 1.1rem; }
+
+  .counter { flex-wrap: wrap; justify-content: center; }
+}
+
+@media (max-width: 420px) {
+  .zone { font-size: 0.85rem; padding: 0.6rem 0.3rem; }
+}
+
+/* --- Font stepper (in drawer) --------------------------------------------- */
+.font-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.font-stepper button {
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink);
+  border-radius: 8px;
+  width: 2rem;
+  height: 2rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.font-stepper button:disabled { opacity: 0.4; cursor: default; }
+.font-value {
+  min-width: 3rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--muted);
 }

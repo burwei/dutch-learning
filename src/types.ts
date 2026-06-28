@@ -20,6 +20,7 @@ export interface Topic {
 
 export type Mode = 'flashcard' | 'typing'
 export type Filter = 'all' | 'unknown'
+export type Theme = 'light' | 'dark'
 
 // Per-card mark, stored in localStorage.
 export type Mark = 'known' | 'unknown'

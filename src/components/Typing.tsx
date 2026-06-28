@@ -77,6 +77,9 @@ export function Typing(props: Props) {
           <div className="result-answer">
             Answer: <strong>{cell}</strong>
           </div>
+          {entry.example?.trim() && (
+            <div className="card-example">{entry.example.trim()}</div>
+          )}
           <div className="result-hint">Enter / → for next card</div>
         </div>
       )}
