@@ -20,11 +20,11 @@ import {
 import { Drawer } from './components/Drawer'
 import { Flashcard } from './components/Flashcard'
 import { Typing } from './components/Typing'
-import { Legend } from './components/Legend'
 
 export default function App() {
-  // Settings drawer.
+  // Settings drawer + reset confirmation dialog.
   const [menuOpen, setMenuOpen] = useState(false)
+  const [confirmReset, setConfirmReset] = useState(false)
 
   // Top-level selections.
   const [vocabType, setVocabType] = useState<VocabType>('verb')
@@ -119,10 +119,13 @@ export default function App() {
     setIndex(0)
   }
 
+  // Only ever called from the confirmation dialog — progress is never cleared
+  // by any other code path.
   const resetProgress = () => {
     clearProgress()
     setProgress({})
     setScore({ correct: 0, attempted: 0 })
+    setConfirmReset(false)
   }
 
   const recordResult = (e: Entry, correct: boolean) => {
@@ -179,7 +182,10 @@ export default function App() {
         onFilter={setFilter}
         onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
         onFont={(delta) => changeFont(delta)}
-        onReset={resetProgress}
+        onReset={() => {
+          setMenuOpen(false)
+          setConfirmReset(true)
+        }}
       />
 
       <main className="main">
@@ -236,9 +242,32 @@ export default function App() {
             )}
           </>
         )}
-
-        <Legend mode={mode} />
       </main>
+
+      {confirmReset && (
+        <div className="modal-backdrop" onClick={() => setConfirmReset(false)}>
+          <div
+            className="modal"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="modal-title">Reset progress?</h2>
+            <p className="modal-text">
+              This permanently clears every known/unknown mark across all vocab
+              types and the current session score. This cannot be undone.
+            </p>
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setConfirmReset(false)}>
+                Cancel
+              </button>
+              <button className="btn-danger" onClick={resetProgress}>
+                Reset progress
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
