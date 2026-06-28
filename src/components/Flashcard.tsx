@@ -51,6 +51,7 @@ export function Flashcard(props: Props) {
 
   // Swipe support.
   const touchX = useRef<number | null>(null)
+  const swiped = useRef(false)
   const onTouchStart = (e: React.TouchEvent) => {
     touchX.current = e.changedTouches[0].clientX
   }
@@ -58,15 +59,28 @@ export function Flashcard(props: Props) {
     if (touchX.current === null) return
     const dx = e.changedTouches[0].clientX - touchX.current
     touchX.current = null
-    if (dx > 60) props.onRemember()
-    else if (dx < -60) props.onForget()
+    if (dx > 60) {
+      swiped.current = true
+      props.onRemember()
+    } else if (dx < -60) {
+      swiped.current = true
+      props.onForget()
+    }
+  }
+  const onCardClick = () => {
+    // A swipe also fires a click on some browsers — don't flip in that case.
+    if (swiped.current) {
+      swiped.current = false
+      return
+    }
+    setFlipped((f) => !f)
   }
 
   return (
     <div className="flashcard-wrap">
       <div
         className={`card ${flipped ? 'flipped' : ''}`}
-        onClick={() => setFlipped((f) => !f)}
+        onClick={onCardClick}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
@@ -75,7 +89,6 @@ export function Flashcard(props: Props) {
           <>
             <span className="card-side-label">Dutch</span>
             <span className="card-text">{front}</span>
-            <span className="card-hint-text">space / click to flip</span>
           </>
         ) : (
           <>
@@ -84,22 +97,24 @@ export function Flashcard(props: Props) {
             {example && <span className="card-example">{example}</span>}
           </>
         )}
+
+        {/* Control hints, pinned to the bottom of the card. */}
+        <span className="card-hint-text">
+          <span className="hint-desktop">
+            ← don't remember · → remember · space to flip
+          </span>
+          <span className="hint-mobile">
+            swipe ← / → to mark · tap to flip
+          </span>
+        </span>
       </div>
 
       <div className="card-controls">
-        <button
-          className="zone zone-left"
-          onClick={props.onForget}
-          title="I don't remember (←)"
-        >
-          ✗ Don't remember
+        <button className="nav-btn" onClick={props.onPrev} title="Previous (↑)">
+          ← Previous
         </button>
-        <button
-          className="zone zone-right"
-          onClick={props.onRemember}
-          title="I remember (→)"
-        >
-          ✓ Remember
+        <button className="nav-btn" onClick={props.onNext} title="Next (↓)">
+          Next →
         </button>
       </div>
     </div>

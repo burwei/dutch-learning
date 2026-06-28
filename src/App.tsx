@@ -11,6 +11,8 @@ import {
   saveTheme,
   loadFontScale,
   saveFontScale,
+  loadPosition,
+  savePosition,
   FONT_MIN,
   FONT_MAX,
   FONT_STEP,
@@ -68,20 +70,37 @@ export default function App() {
     setTopicId(VOCAB[t].topics[0].id)
   }
 
+  // Signature of the current deck context — position is only resumed when this
+  // matches what was saved.
+  const sig = `${vocabType}:${topicId}:${filter}`
+
   // Rebuild the deck whenever the selection changes. We deliberately do NOT
   // rebuild on every mark, so drilling doesn't reshuffle under you — toggle the
-  // filter again to refresh the "only unknown" set.
+  // filter again to refresh the "only unknown" set. On (re)build we resume the
+  // last viewed card for this context if we can still find it.
   useEffect(() => {
     let pool = relevantEntries(loadVocab(vocabType), topic)
     if (filter === 'unknown') {
       pool = pool.filter((e) => progress[`${key}:${config.headword(e)}`] !== 'known')
     }
+    const saved = loadPosition()
+    let start = 0
+    if (saved && saved.sig === sig) {
+      const i = pool.findIndex((e) => config.headword(e) === saved.head)
+      if (i >= 0) start = i
+    }
     setOrder(pool)
-    setIndex(0)
+    setIndex(start)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vocabType, topicId, filter])
 
   const current = order[index]
+
+  // Remember the current card so a reload resumes here.
+  useEffect(() => {
+    if (current) savePosition(sig, config.headword(current))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current, sig])
 
   const setMark = (e: Entry, mark: Mark) => {
     setProgress((prev) => {

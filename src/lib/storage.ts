@@ -3,6 +3,7 @@ import type { Progress, VocabType, Theme } from '../types'
 const STORAGE_KEY = 'dutch-flashcards.progress'
 const THEME_KEY = 'dutch-flashcards.theme'
 const FONT_KEY = 'dutch-flashcards.fontScale'
+const POS_KEY = 'dutch-flashcards.position'
 
 // Font scale (multiplier on card text), clamped to a sensible range.
 export const FONT_MIN = 0.7
@@ -74,6 +75,26 @@ export function loadFontScale(): number {
 export function saveFontScale(scale: number): void {
   try {
     localStorage.setItem(FONT_KEY, String(scale))
+  } catch {
+    // ignore
+  }
+}
+
+// Current card position, so a reload resumes where you left off. Stored as the
+// headword + a signature of the deck context (vocab/topic/filter) so we only
+// resume when the same deck is in view.
+export function loadPosition(): { sig: string; head: string } | null {
+  try {
+    const raw = localStorage.getItem(POS_KEY)
+    return raw ? (JSON.parse(raw) as { sig: string; head: string }) : null
+  } catch {
+    return null
+  }
+}
+
+export function savePosition(sig: string, head: string): void {
+  try {
+    localStorage.setItem(POS_KEY, JSON.stringify({ sig, head }))
   } catch {
     // ignore
   }
