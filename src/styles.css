@@ -1,0 +1,292 @@
+:root {
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --ink: #1f2430;
+  --muted: #8a93a3;
+  --line: #e2e6ec;
+  --accent: #3b6ef0;
+  --ok: #1f9d57;
+  --bad: #d6453d;
+  --shadow: 0 8px 30px rgba(20, 30, 60, 0.08);
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+/* --- Header ---------------------------------------------------------------- */
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.toggle-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.toggle-buttons {
+  display: inline-flex;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px;
+}
+
+.pill {
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pill.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.reset {
+  margin-left: auto;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--bad);
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* --- Main / counter -------------------------------------------------------- */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 1rem 2.5rem;
+  gap: 1.25rem;
+}
+
+.status {
+  margin-top: 3rem;
+  color: var(--muted);
+  text-align: center;
+  max-width: 28rem;
+}
+.status.error { color: var(--bad); }
+
+.counter {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.counter-known { color: var(--ok); }
+.counter-score { color: var(--accent); }
+
+.shuffle {
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  padding: 0.3rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* --- Flashcard ------------------------------------------------------------- */
+.flashcard-wrap { width: 100%; max-width: 40rem; }
+
+.card-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.6rem;
+}
+
+.zone {
+  flex: 0 0 3rem;
+  border: 1px dashed var(--line);
+  background: var(--card);
+  border-radius: 14px;
+  font-size: 1.4rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+.zone-left:hover { color: var(--bad); border-color: var(--bad); }
+.zone-right:hover { color: var(--ok); border-color: var(--ok); }
+
+.card {
+  position: relative;
+  flex: 1;
+  min-height: 16rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 2rem 1.5rem;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+}
+.card.flipped { background: #fbfcfe; }
+
+.card-side-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.card-text {
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.card-hint-text {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.badge {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.9rem;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+}
+.badge-known { background: #e3f5ec; color: var(--ok); }
+.badge-unknown { background: #fdeceb; color: var(--bad); }
+
+/* --- Typing ---------------------------------------------------------------- */
+.typing {
+  width: 100%;
+  max-width: 40rem;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+
+.typing-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.typing-hint {
+  font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+}
+
+.answer {
+  width: 100%;
+  max-width: 22rem;
+  font-size: 1.3rem;
+  padding: 0.6rem 0.8rem;
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  outline: none;
+  text-align: center;
+}
+.answer:focus { border-color: var(--accent); }
+.answer.ok { border-color: var(--ok); background: #f2fbf6; }
+.answer.bad { border-color: var(--bad); background: #fdf3f2; }
+
+.result { display: flex; flex-direction: column; gap: 0.3rem; }
+.result-mark { font-size: 1.1rem; font-weight: 600; }
+.result.ok .result-mark { color: var(--ok); }
+.result.bad .result-mark { color: var(--bad); }
+.result-answer { font-size: 1.05rem; }
+.result-hint { font-size: 0.78rem; color: var(--muted); }
+
+/* --- Legend ---------------------------------------------------------------- */
+.legend {
+  width: 100%;
+  max-width: 40rem;
+  margin-top: auto;
+}
+.legend-toggle {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0.3rem 0;
+}
+.legend-list {
+  list-style: none;
+  margin: 0.3rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.3rem 1rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+kbd {
+  font-family: inherit;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.8rem;
+  color: var(--ink);
+}
+
+@media (max-width: 480px) {
+  .zone { flex-basis: 2.2rem; font-size: 1.1rem; }
+  .card-text { font-size: 1.8rem; }
+  .reset { margin-left: 0; }
+}
