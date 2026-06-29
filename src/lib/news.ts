@@ -11,21 +11,53 @@ const files = import.meta.glob('/daily-news/*.txt', {
 
 // Section markers — must match scripts/fetch_daily_news.py.
 const ARTICLE = '[ARTICLE]'
+const TRANSLATIONS = '[TRANSLATIONS]'
 const WORDDATA = '[WORDDATA]'
+
+// Strip zero-width junk, collapse whitespace, trim — so a sentence read from
+// the DOM keys the same way the pipeline wrote it. Keep in sync with
+// translation_lines() in scripts/fetch_daily_news.py.
+export function normSentence(s: string): string {
+  return s
+    .replace(/[\u200B-\u200D\uFEFF]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
 
 function header(text: string, key: string): string {
   const m = text.match(new RegExp(`^${key}:\\s*(.*)$`, 'm'))
   return m ? m[1].trim() : ''
 }
 
-// The article body sits between [ARTICLE] and the next section marker.
+// The article body sits between [ARTICLE] and the next section marker
+// ([TRANSLATIONS] if present, else [WORDDATA]).
 function articleBody(text: string): string {
   const start = text.indexOf(ARTICLE)
   if (start < 0) return ''
   const from = start + ARTICLE.length
-  const end = text.indexOf(WORDDATA, from)
+  let end = text.indexOf(TRANSLATIONS, from)
+  if (end < 0) end = text.indexOf(WORDDATA, from)
   const to = end >= 0 ? end : text.length
   return text.slice(from, to).trim()
+}
+
+// `dutch | english` lines between [TRANSLATIONS] and [WORDDATA] -> a lookup
+// keyed by the whitespace-normalised Dutch sentence.
+function translations(text: string): Record<string, string> {
+  const start = text.indexOf(TRANSLATIONS)
+  if (start < 0) return {}
+  const from = start + TRANSLATIONS.length
+  const end = text.indexOf(WORDDATA, from)
+  const block = text.slice(from, end >= 0 ? end : text.length)
+  const map: Record<string, string> = {}
+  for (const line of block.split('\n')) {
+    const sep = line.indexOf(' | ')
+    if (sep < 0) continue
+    const nl = normSentence(line.slice(0, sep))
+    const en = line.slice(sep + 3).trim()
+    if (nl && en) map[nl] = en
+  }
+  return map
 }
 
 // The surface-form -> lemma index lives in the single ```json fenced block.
@@ -48,6 +80,7 @@ function parse(path: string, text: string): NewsDoc {
     source: header(text, 'Source'),
     body: articleBody(text),
     index: wordIndex(text),
+    translations: translations(text),
   }
 }
 
@@ -70,4 +103,10 @@ export function lookup(
   if (!lemma) return null
   const entry = newsDictionary[lemma.toLowerCase()]
   return entry ? { lemma, entry } : null
+}
+
+// English translation for a whole sentence (as read from the DOM), or null when
+// the daily file predates translations / the sentence didn't match.
+export function translate(doc: NewsDoc, sentence: string): string | null {
+  return doc.translations[normSentence(sentence)] ?? null
 }

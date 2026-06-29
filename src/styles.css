@@ -632,6 +632,11 @@ body {
   border-radius: 18px;
   box-shadow: var(--shadow);
   padding: 1.6rem 1.5rem 2rem;
+  /* The article text is selectable so a long-press gives the native
+     selection handles + copy menu (iOS/Android). */
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }
 
 /* Previous / next day navigation under the article. */
@@ -676,11 +681,10 @@ body {
   line-height: 1.75;
 }
 
-/* Clickable words sit inline and read like normal text until tapped. */
+/* Tappable words sit inline and read like normal text until tapped. */
+.news-sentence { display: inline; }
 .news-word {
   display: inline;
-  border: none;
-  background: none;
   color: inherit;
   font: inherit;
   padding: 0 1px;
@@ -688,8 +692,7 @@ body {
   border-radius: 4px;
   cursor: pointer;
 }
-.news-word:hover,
-.news-word:focus-visible { background: var(--accent-soft); outline: none; }
+.news-word:hover { background: var(--accent-soft); outline: none; }
 
 /* --- Word definition popover ----------------------------------------------- */
 .news-pop-backdrop {
@@ -749,6 +752,22 @@ body {
   font-size: 0.92rem;
   line-height: 1.4;
 }
+
+/* Sentence translation popover. */
+.news-pop-sentence {
+  margin: 0.4rem 0 0;
+  font-size: 1.02rem;
+  line-height: 1.45;
+}
+.news-pop-translation {
+  margin: 0.6rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+  font-size: 1rem;
+  line-height: 1.45;
+  color: var(--accent);
+}
+.news-pop-muted { color: var(--muted); font-style: italic; }
 
 /* On phones the popover becomes a bottom sheet (overrides the inline coords). */
 @media (max-width: 768px) {

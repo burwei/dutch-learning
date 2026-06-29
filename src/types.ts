@@ -30,9 +30,9 @@ export type Theme = 'light' | 'dark'
 // Top-level section of the app: drill vocab, or read the daily news.
 export type TopView = 'vocab' | 'news'
 
-// One dictionary entry behind a clickable word. Built from the vocab CSVs and
-// the lexicon, shared across all articles. Fields that don't apply to the word's
-// type are empty strings.
+// One dictionary entry behind a clickable word. Built from the vocab CSVs
+// (incl. vocab/other), shared across all articles. Fields that don't apply to
+// the word's type are empty strings.
 export interface WordEntry {
   pos: 'verb' | 'noun' | 'adj' | 'adv' | 'other'
   english: string
@@ -47,6 +47,8 @@ export interface WordEntry {
 // A parsed daily-news file: the article plus a click-to-define index. `index`
 // maps a lowercased surface form (as it appears in the text) to a lemma; the
 // definition for that lemma is looked up from the shared dictionary.
+// `translations` maps a whitespace-normalised Dutch sentence to its English
+// translation, powering double-tap-to-translate.
 export interface NewsDoc {
   date: string // YYYY-MM-DD
   title: string
@@ -54,6 +56,7 @@ export interface NewsDoc {
   source: string
   body: string
   index: Record<string, string>
+  translations: Record<string, string>
 }
 
 // Per-card mark, stored in localStorage.

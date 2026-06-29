@@ -153,11 +153,13 @@ function levelSortKey(id: Level): [number, number, string] {
   return [b < 0 ? 99 : b, v, id]
 }
 
-// Every level id present across all vocab folders, sorted, with labels.
+// Every level id present across the flashcard vocab folders, sorted, with
+// labels. The vocab/other/ folder (function words, names) is dictionary-only —
+// it backs click-to-define but is never a studyable level, so skip it here.
 export function availableLevels(): { id: Level; label: string }[] {
   const ids = new Set<Level>()
   for (const path of Object.keys(csvFiles)) {
-    if (path.includes('/vocab/')) ids.add(levelIdFromPath(path))
+    if (/\/vocab\/(verb|noun|adj|adv)\//.test(path)) ids.add(levelIdFromPath(path))
   }
   return [...ids]
     .sort((a, b) => {
@@ -179,16 +181,11 @@ function parse(text: string): Entry[] {
 
 // --- Click-to-define dictionary --------------------------------------------
 //
-// Every word the news reader can define lives once, in the vocab CSVs (verb/
-// noun/adj/adv across all levels, including news.csv) or in lexicon/*.csv
-// (function words, names — not flashcard levels). A daily-news file only stores
-// a surface-form -> lemma index; the definition is looked up here by lemma.
-
-const lexiconFiles = import.meta.glob('/lexicon/*.csv', {
-  query: '?raw',
-  import: 'default',
-  eager: true,
-}) as Record<string, string>
+// Every word the news reader can define lives once, in the vocab CSVs: verb/
+// noun/adj/adv across all levels (including news.csv) are studyable, while
+// vocab/other/*.csv holds function words and names — dictionary-only, not a
+// flashcard level. A daily-news file only stores a surface-form -> lemma index;
+// the definition is looked up here by lemma.
 
 function emptyEntry(): WordEntry {
   return {
@@ -204,7 +201,7 @@ function emptyEntry(): WordEntry {
 }
 
 // lemma (lowercased) -> definition. Built once at load; first definition wins,
-// so a curated core entry takes precedence over a later news/lexicon one.
+// so a curated core entry takes precedence over a later news/other one.
 export const newsDictionary: Record<string, WordEntry> = (() => {
   const dict: Record<string, WordEntry> = {}
   const add = (lemma: string, entry: WordEntry) => {
@@ -214,33 +211,34 @@ export const newsDictionary: Record<string, WordEntry> = (() => {
 
   for (const [path, text] of Object.entries(csvFiles)) {
     const m = path.match(/\/vocab\/(verb|noun|adj|adv)\//)
-    if (!m) continue
-    const pos = m[1] as WordEntry['pos']
-    for (const row of parse(text)) {
-      const lemma = (row.infinitive || row.dutch || '').trim()
-      if (!lemma) continue
-      add(lemma, {
-        pos,
-        english: row.english || '',
-        example: row.example || '',
-        article: row.article || '',
-        plural: row.plural || '',
-        present: row.present || '',
-        simple_past: row.simple_past || '',
-        present_perfect: row.present_perfect || '',
-      })
+    if (m) {
+      const pos = m[1] as WordEntry['pos']
+      for (const row of parse(text)) {
+        const lemma = (row.infinitive || row.dutch || '').trim()
+        if (!lemma) continue
+        add(lemma, {
+          pos,
+          english: row.english || '',
+          example: row.example || '',
+          article: row.article || '',
+          plural: row.plural || '',
+          present: row.present || '',
+          simple_past: row.simple_past || '',
+          present_perfect: row.present_perfect || '',
+        })
+      }
+      continue
     }
-  }
-
-  for (const text of Object.values(lexiconFiles)) {
-    for (const row of parse(text)) {
-      const lemma = (row.dutch || '').trim()
-      if (!lemma) continue
-      const entry = emptyEntry()
-      entry.pos = (row.pos as WordEntry['pos']) || 'other'
-      entry.english = row.english || ''
-      entry.example = row.example || ''
-      add(lemma, entry)
+    if (path.includes('/vocab/other/')) {
+      for (const row of parse(text)) {
+        const lemma = (row.dutch || '').trim()
+        if (!lemma) continue
+        const entry = emptyEntry()
+        entry.pos = (row.pos as WordEntry['pos']) || 'other'
+        entry.english = row.english || ''
+        entry.example = row.example || ''
+        add(lemma, entry)
+      }
     }
   }
 

@@ -7,7 +7,7 @@ surface-form -> lemma index so it stays small even after years of daily files.
 
   - Known/new vocab words (verb/noun/adj/adv) -> vocab/<type>/news.csv
     (each CSV is a selectable "level", so these become studyable flashcards).
-  - Function words / proper nouns (everything else) -> lexicon/other.csv
+  - Function words / proper nouns (everything else) -> vocab/other/other.csv
     (used for click-to-define in the app, not a flashcard level).
   - daily-news/YYYY-MM-DD.txt -> the article + the index only.
 
@@ -43,7 +43,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 VOCAB_DIR = REPO_ROOT / "vocab"
 NEWS_DIR = REPO_ROOT / "daily-news"
 WORK_DIR = NEWS_DIR / ".work"  # transient job/words files (git-ignored)
-LEXICON_FILE = REPO_ROOT / "lexicon" / "other.csv"
+LEXICON_FILE = VOCAB_DIR / "other" / "other.csv"
 PACKAGE_JSON = REPO_ROOT / "package.json"
 
 DEFAULT_FEED = "https://feeds.nos.nl/nosnieuwsalgemeen"
@@ -52,6 +52,7 @@ USER_AGENT = "Mozilla/5.0 (dutch-learning daily-news bot)"
 
 # Section markers in the generated .txt — keep in sync with src/lib/news.ts.
 ARTICLE_MARKER = "[ARTICLE]"
+TRANSLATIONS_MARKER = "[TRANSLATIONS]"
 WORDDATA_MARKER = "[WORDDATA]"
 
 # New words from a day land in the "news" level of each vocab type.
@@ -135,18 +136,12 @@ def parse_article(article_url: str) -> dict:
 
 
 def stored_lemmas() -> set[str]:
-    """Every Dutch headword already stored (vocab CSVs + the lexicon), lowercased."""
+    """Every Dutch headword already stored under vocab/ (incl. other/), lowercased."""
     lemmas: set[str] = set()
     for path in VOCAB_DIR.rglob("*.csv"):
         with path.open(encoding="utf-8", newline="") as fh:
             for row in csv.DictReader(fh):
                 head = (row.get("infinitive") or row.get("dutch") or "").strip().lower()
-                if head:
-                    lemmas.add(head)
-    if LEXICON_FILE.exists():
-        with LEXICON_FILE.open(encoding="utf-8", newline="") as fh:
-            for row in csv.DictReader(fh):
-                head = (row.get("dutch") or "").strip().lower()
                 if head:
                     lemmas.add(head)
     return lemmas
@@ -262,9 +257,21 @@ WORD_SCHEMA = {
                     "article", "plural", "present", "simple_past", "present_perfect",
                 ],
             },
-        }
+        },
+        "sentences": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "dutch": {"type": "string"},
+                    "english": {"type": "string"},
+                },
+                "required": ["dutch", "english"],
+            },
+        },
     },
-    "required": ["words"],
+    "required": ["words", "sentences"],
 }
 
 INSTRUCTIONS = """\
@@ -292,21 +299,32 @@ maps a tapped word back to your entry, so be exhaustive and exact.
 - For nouns: article ('de' or 'het') and plural. Leave empty for non-nouns.
 - Leave any field that does not apply as an empty string "" (never null).
 
-Output JSON shaped as {"words": [ ...entries... ]} and nothing else.
+Also produce "sentences": a full English translation of the article for the \
+"double-tap a sentence to translate" feature. Include the title as the first \
+entry, then every sentence of the body in order. For each:
+- dutch: the sentence exactly as it appears in the article (verbatim, including \
+its punctuation), as ONE line with single spaces between words.
+- english: a natural, faithful English translation of that whole sentence.
+Split on sentence boundaries (. ! ?); keep quoted speech together with the \
+sentence it belongs to.
+
+Output JSON shaped as {"words": [ ...entries... ], "sentences": [ ...pairs... ]} \
+and nothing else.
 """
 
 
 # --- Anthropic API path (used only by `auto`) --------------------------------
 
 
-def enrich_with_claude(article: dict, model: str) -> list[dict]:
+def enrich_with_claude(article: dict, model: str) -> tuple[list[dict], list[dict]]:
     import anthropic  # imported lazily so the agent flow needs no SDK
 
     client = anthropic.Anthropic()
     user = (
         f"Article title: {article['title']}\n\n"
         f"Article text:\n{article['body']}\n\n"
-        "Produce click-to-define entries for every distinct word."
+        "Produce click-to-define entries for every distinct word, plus a "
+        "sentence-by-sentence English translation."
     )
     message = client.messages.create(
         model=model,
@@ -320,7 +338,8 @@ def enrich_with_claude(article: dict, model: str) -> list[dict]:
         messages=[{"role": "user", "content": user}],
     )
     text = "".join(block.text for block in message.content if block.type == "text")
-    return json.loads(text)["words"]
+    payload = json.loads(text)
+    return payload["words"], payload.get("sentences", [])
 
 
 # --- Assemble the daily file -------------------------------------------------
@@ -341,7 +360,20 @@ def build_index(words: list[dict]) -> dict:
     return index
 
 
-def render_file(article: dict, index: dict) -> str:
+def translation_lines(sentences: list[dict]) -> list[str]:
+    """`dutch | english` per line. Whitespace in the Dutch side is collapsed so
+    keys match how the app normalises a tapped sentence (see src/lib/news.ts)."""
+    zero_width = "[\u200b-\u200d\ufeff]"
+    lines: list[str] = []
+    for s in sentences:
+        nl = re.sub(r"\s+", " ", re.sub(zero_width, "", s.get("dutch") or "")).strip()
+        en = re.sub(r"\s+", " ", (s.get("english") or "")).strip()
+        if nl and en:
+            lines.append(f"{nl} | {en}")
+    return lines
+
+
+def render_file(article: dict, index: dict, sentences: list[dict]) -> str:
     data = json.dumps({"index": index}, ensure_ascii=False, indent=2, sort_keys=True)
     return "\n".join([
         f"Title: {article['title']}",
@@ -353,6 +385,9 @@ def render_file(article: dict, index: dict) -> str:
         ARTICLE_MARKER,
         article["body"],
         "",
+        TRANSLATIONS_MARKER,
+        *translation_lines(sentences),
+        "",
         WORDDATA_MARKER,
         "```json",
         data,
@@ -361,13 +396,13 @@ def render_file(article: dict, index: dict) -> str:
     ])
 
 
-def write_news_file(article: dict, words: list[dict], bump: bool) -> Path:
+def write_news_file(article: dict, words: list[dict], sentences: list[dict], bump: bool) -> Path:
     summary = persist_new_words(words, article)
     added = sum(summary.values())
     index = build_index(words)
     NEWS_DIR.mkdir(exist_ok=True)
     out_path = NEWS_DIR / f"{article['date']}.txt"
-    out_path.write_text(render_file(article, index), encoding="utf-8")
+    out_path.write_text(render_file(article, index, sentences), encoding="utf-8")
     bits = ", ".join(f"{k}:{v}" for k, v in summary.items() if v)
     print(f"Wrote {out_path.relative_to(REPO_ROOT)} "
           f"({len(index)} clickable forms; {added} new words stored"
@@ -440,13 +475,15 @@ def cmd_build(args) -> None:
         raise SystemExit(f"Words file not found: {wp}. The agent must write it.")
     job = json.loads(jp.read_text(encoding="utf-8"))
     article = {k: job[k] for k in ("title", "date", "reporter", "url", "category", "body")}
-    words = json.loads(wp.read_text(encoding="utf-8"))["words"]
+    payload = json.loads(wp.read_text(encoding="utf-8"))
+    words = payload["words"]
+    sentences = payload.get("sentences", [])
     out = NEWS_DIR / f"{article['date']}.txt"
     if out.exists() and not args.force:
         print(f"NOTHING_TO_DO: {out.relative_to(REPO_ROOT)} already exists "
               f"(use --force to regenerate).", file=sys.stderr)
         return
-    write_news_file(article, words, bump=not args.no_version_bump)
+    write_news_file(article, words, sentences, bump=not args.no_version_bump)
 
 
 def cmd_auto(args) -> None:
@@ -463,8 +500,8 @@ def cmd_auto(args) -> None:
     if not os.environ.get("ANTHROPIC_API_KEY"):
         raise SystemExit("ANTHROPIC_API_KEY is not set; cannot enrich the article.")
     print("Enriching with Claude...", file=sys.stderr)
-    words = enrich_with_claude(article, args.model)
-    write_news_file(article, words, bump=not args.no_version_bump)
+    words, sentences = enrich_with_claude(article, args.model)
+    write_news_file(article, words, sentences, bump=not args.no_version_bump)
 
 
 def main() -> None:

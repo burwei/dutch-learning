@@ -23,6 +23,26 @@ Klimaatorganisaties noemen het intensieve gebruik van een privéjet moeilijk te 
 
 Het WK van 2026 wordt afgewerkt in zestien speelsteden verspreid over de Verenigde Staten, Canada en Mexico. Daardoor zijn de reisafstanden tussen de wedstrijden veel groter dan tijdens het WK van 2022 in Qatar, waar alle stadions relatief dicht bij elkaar lagen.
 
+[TRANSLATIONS]
+BBC: Infantino maakte tijdens WK 27 vluchten met privéjet | BBC: Infantino made 27 flights by private jet during the World Cup
+FIFA-voorzitter Gianni Infantino heeft tijdens de groepsfase van het WK voetbal in Noord-Amerika zeker 27 vluchten gemaakt met een privéjet. | FIFA president Gianni Infantino made at least 27 flights by private jet during the group stage of the football World Cup in North America.
+Dat meldt de BBC op basis van een analyse van de vliegbewegingen van een toestel dat aan de wereldvoetbalbond wordt gelinkt. | The BBC reports this based on an analysis of the flight movements of an aircraft linked to the world football association.
+Volgens de BBC was Infantino in zestien dagen tijd bij 24 wedstrijden in de Verenigde Staten, Canada en Mexico. | According to the BBC, Infantino attended 24 matches in sixteen days across the United States, Canada and Mexico.
+Daarbij zou het vliegtuig ruim 50.000 kilometer hebben afgelegd en meer dan 66 uur in de lucht zijn geweest. | In doing so, the plane is said to have covered more than 50,000 kilometres and spent over 66 hours in the air.
+De langste vlucht was van Vancouver naar Miami, een afstand van ruim 4500 kilometer. | The longest flight was from Vancouver to Miami, a distance of more than 4,500 kilometres.
+Op sommige dagen maakte het toestel drie vluchten, zodat de Zwitserse FIFA-voorzitter meerdere wedstrijden op één dag kon bezoeken. | On some days the aircraft made three flights, so the Swiss FIFA president could attend several matches in one day.
+De BBC schat dat het toestel in deze periode ongeveer net zoveel CO2 heeft uitgestoten als de gemiddelde jaarlijkse uitstoot van 78 mensen wereldwijd. | The BBC estimates that during this period the aircraft emitted roughly as much CO2 as the average annual emissions of 78 people worldwide.
+De berekening is gebaseerd op het geschatte brandstofverbruik van een Gulfstream G650ER, het type toestel waarvan wordt aangenomen dat Infantino ermee reisde. | The calculation is based on the estimated fuel consumption of a Gulfstream G650ER, the type of aircraft Infantino is assumed to have travelled on.
+De exacte uitstoot is niet vast te stellen, onder meer omdat onbekend is hoeveel passagiers aan boord waren en hoeveel brandstof het toestel daadwerkelijk heeft verbruikt. | The exact emissions cannot be determined, partly because it is unknown how many passengers were on board and how much fuel the aircraft actually used.
+De FIFA bevestigde in een reactie aan de BBC niet dat Infantino met het betreffende toestel heeft gereisd. | In a response to the BBC, FIFA did not confirm that Infantino travelled on the aircraft in question.
+Wel laat de wereldvoetbalbond weten dat de voorzitter "regelmatig reist voor werkzaamheden en toernooigerelateerde verplichtingen". | The world football association did say that the president "travels regularly for work and tournament-related obligations".
+Volgens de FIFA wordt daarbij soms gebruikgemaakt van lijnvluchten en soms van een gecharterd privévliegtuig, afhankelijk van wat het meest efficiënt en kosteneffectief is. | According to FIFA, this sometimes involves scheduled flights and sometimes a chartered private plane, depending on what is most efficient and cost-effective.
+Op aanvullende vragen van de BBC, onder meer over het aantal inzittenden en eventuele compensatie van de uitstoot, gaf de bond geen antwoord. | The association gave no answer to additional questions from the BBC, including about the number of occupants and any offsetting of the emissions.
+Klimaatorganisaties noemen het intensieve gebruik van een privéjet moeilijk te rijmen met de duurzaamheidsambities van de FIFA. | Climate organisations call the intensive use of a private jet hard to reconcile with FIFA's sustainability ambitions.
+De bond heeft zich ten doel gesteld de uitstoot tegen 2030 te halveren en in 2040 klimaatneutraal te zijn. | The association has set itself the goal of halving its emissions by 2030 and being climate-neutral by 2040.
+Het WK van 2026 wordt afgewerkt in zestien speelsteden verspreid over de Verenigde Staten, Canada en Mexico. | The 2026 World Cup will be played in sixteen host cities spread across the United States, Canada and Mexico.
+Daardoor zijn de reisafstanden tussen de wedstrijden veel groter dan tijdens het WK van 2022 in Qatar, waar alle stadions relatief dicht bij elkaar lagen. | As a result, the travel distances between matches are much greater than during the 2022 World Cup in Qatar, where all the stadiums lay relatively close together.
+
 [WORDDATA]
 ```json
 {

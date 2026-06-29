@@ -17,15 +17,16 @@ The script splits the job into two steps so an agent can sit in the middle:
    `daily-news/.work/<date>.job.json`. The job file contains the article **and**
    the exact instructions + JSON schema for the word data.
 2. The **agent** reads the job, builds a dictionary entry for every word (with a
-   full-sentence example), and writes `daily-news/.work/<date>.words.json` as
-   `{"words": [ ... ]}`.
+   full-sentence example) plus a sentence-by-sentence English translation, and
+   writes `daily-news/.work/<date>.words.json` as
+   `{"words": [ ... ], "sentences": [ {"dutch", "english"}, ... ]}`.
 3. `build` — reads the job + words, appends words **new** to your lists
-   (`vocab/<type>/news.csv` and `lexicon/other.csv`), writes the slim
+   (`vocab/<type>/news.csv` and `vocab/other/other.csv`), writes the slim
    `daily-news/<date>.txt` (article + index only), and bumps the patch version
    in `package.json`.
 
 The `.work/` files are scratch and git-ignored. What gets committed each day:
-the day's `.txt`, any appended `vocab/*/news.csv` and `lexicon/other.csv` rows,
+the day's `.txt`, any appended `vocab/*/news.csv` and `vocab/other/other.csv` rows,
 and the `package.json` version bump.
 
 ## Set up the schedule
@@ -63,24 +64,28 @@ You maintain the daily Dutch news file for this repo. Do this once now:
    text under "body", the rules under "instructions", and the JSON schema under
    "schema". Follow the instructions exactly: produce one dictionary entry for
    EVERY distinct word in the article (content words and function words), with
-   inflected forms grouped under their lemma via "surface_forms".
+   inflected forms grouped under their lemma via "surface_forms". Also produce
+   "sentences": a sentence-by-sentence English translation (title first, then the
+   body in order) for the double-tap-to-translate feature.
 
 3. Write your result to the WORDS_FILE as JSON shaped exactly like
-   {"words": [ ...entries... ]}, matching the schema in the job file. Every entry
-   must include all required fields; use "" for fields that don't apply.
+   {"words": [ ...entries... ], "sentences": [ {"dutch", "english"}, ... ]},
+   matching the schema in the job file. Every entry must include all required
+   fields; use "" for fields that don't apply.
 
 4. Run:  python3 scripts/fetch_daily_news.py build --date <DATE>
-   This appends new words to vocab/<type>/news.csv and lexicon/other.csv, writes
+   This appends new words to vocab/<type>/news.csv and vocab/other/other.csv, writes
    daily-news/<DATE>.txt, and bumps the version in package.json.
 
 5. Sanity-check daily-news/<DATE>.txt: it must have a Title/Date/Reporter/Source/
-   Category header, an [ARTICLE] section, and a [WORDDATA] section whose ```json
+   Category header, an [ARTICLE] section, a [TRANSLATIONS] section (one
+   `dutch | english` line per sentence), and a [WORDDATA] section whose ```json
    block parses. If anything looks wrong, fix the words file and re-run build
    with --force; do not commit a broken file.
 
 6. Commit the changes on a branch named daily-news/<DATE>, push, and open a pull
    request titled "Daily news: <DATE>". Stage everything git reports as changed:
-   daily-news/<DATE>.txt, any vocab/*/news.csv and lexicon/other.csv, and
+   daily-news/<DATE>.txt, any vocab/*/news.csv and vocab/other/other.csv, and
    package.json. Do not touch the .work/ files (they are git-ignored).
 ```
 
@@ -90,7 +95,7 @@ Replace step 6 with:
 
 ```text
 6. Commit all changed files (daily-news/<DATE>.txt, vocab/*/news.csv,
-   lexicon/other.csv, package.json) directly to main and push.
+   vocab/other/other.csv, package.json) directly to main and push.
    (Pushing to main triggers the GitHub Pages deploy.)
 ```
 
@@ -102,6 +107,6 @@ You can rehearse the whole flow locally before scheduling it — you act as the
 ```bash
 python3 scripts/fetch_daily_news.py fetch
 # open daily-news/.work/<date>.job.json, write the entries to
-# daily-news/.work/<date>.words.json as {"words":[...]}, then:
+# daily-news/.work/<date>.words.json as {"words":[...],"sentences":[...]}, then:
 python3 scripts/fetch_daily_news.py build --date <date>
 ```

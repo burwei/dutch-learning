@@ -41,7 +41,7 @@ NOS's headline of the day, builds a dictionary entry for every word, and:
 
 - appends words **new** to your lists into `vocab/<type>/news.csv` (which shows
   up as a studyable **"News"** level) — verbs, nouns, adjectives, adverbs;
-- appends function words and names into `lexicon/other.csv` (used for
+- appends function words and names into `vocab/other/other.csv` (used for
   click-to-define only, not a flashcard level);
 - writes the day's file with just the article + the index (definitions are
   looked up from the lists above, never duplicated per day).
@@ -103,7 +103,7 @@ Notes:
 - The daily-news script appends discovered words to `vocab/<type>/news.csv` with
   one extra `category` column (the NOS section). Extra columns are ignored by the
   app, so `news.csv` works like any other level. Function words and proper nouns
-  go to `lexicon/other.csv` (`dutch,english,pos,example,category`), which powers
+  go to `vocab/other/other.csv` (`dutch,english,pos,example,category`), which powers
   click-to-define in the News reader but is not a flashcard level.
 
 ## Vocabulary sources

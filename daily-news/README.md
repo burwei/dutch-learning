@@ -6,7 +6,7 @@ headline of the day. Each file is small plain text and is what the app's
 **News** tab renders.
 
 Word definitions are **not** stored here — they live once in the shared lists
-(`vocab/<type>/news.csv` and `lexicon/other.csv`) and are reused across days, so
+(`vocab/<type>/news.csv` and `vocab/other/other.csv`) and are reused across days, so
 the repo stays small even after years of files. A daily file only holds the
 article plus a `surface-form → lemma` index; the app resolves each lemma to its
 definition from the lists.
@@ -23,14 +23,21 @@ Category: <NOS section, e.g. Politiek>
 [ARTICLE]
 <full article text, paragraphs separated by blank lines>
 
+[TRANSLATIONS]
+<dutch sentence> | <english translation>
+...
+
 [WORDDATA]
 ```​json
 { "index": { "<surface form as it appears>": "<lemma>", ... } }
 ```​
 ```
 
-- `[ARTICLE]` and `[WORDDATA]` are section markers shared with the generator and
-  the web app (`src/lib/news.ts`) — don't rename them.
+- `[ARTICLE]`, `[TRANSLATIONS]` and `[WORDDATA]` are section markers shared with
+  the generator and the web app (`src/lib/news.ts`) — don't rename them.
+- `[TRANSLATIONS]` holds one `dutch | english` line per sentence (title first),
+  powering double-tap-to-translate. The Dutch side is whitespace-normalised so
+  it matches how the app keys a tapped sentence.
 - `index` maps every word **as it appears** in the article (including inflected
   forms, lowercased) to its dictionary `lemma`. The app looks the lemma up in
   the vocab lists / lexicon to show the definition.
@@ -40,7 +47,7 @@ Category: <NOS section, e.g. Politiek>
 | Word type | Stored in | Shows up as |
 | --- | --- | --- |
 | verb / noun / adj / adv | `vocab/<type>/news.csv` | a studyable **"News"** level |
-| function words, names, other | `lexicon/other.csv` | click-to-define only |
+| function words, names, other | `vocab/other/other.csv` | click-to-define only |
 
 Each lemma is written once; later days that reuse it add nothing. Example
 sentences are full sentences.
