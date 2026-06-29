@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { NewsDoc, WordEntry } from '../types'
 import { lookup, translate, normSentence, splitSentences } from '../lib/news'
+import { segment } from '../lib/article'
 
 interface Props {
   docs: NewsDoc[]
@@ -23,11 +24,6 @@ interface Translation {
   y: number
 }
 
-// Split a piece of text into word / non-word runs, keeping everything so the
-// text renders verbatim. Words become tappable; punctuation/spaces stay inert.
-// (Sentence splitting lives in ../lib/news so the parser and the renderer agree.)
-const TOKEN = /\p{L}[\p{L}'’\-]*|[^\p{L}]+/gu
-
 // One sentence: inert text with tappable words inside, plus the gesture model.
 // - single tap on a word  -> word definition (debounced so a double-tap wins)
 // - double tap            -> select + translate the whole sentence
@@ -45,7 +41,7 @@ function Sentence({
 }) {
   const ref = useRef<HTMLSpanElement>(null)
   const timer = useRef<number | null>(null)
-  const tokens = useMemo(() => [...text.matchAll(TOKEN)].map((m) => m[0]), [text])
+  const segments = useMemo(() => segment(text), [text])
 
   useEffect(() => () => {
     if (timer.current != null) window.clearTimeout(timer.current)
@@ -80,13 +76,23 @@ function Sentence({
 
   return (
     <span className="news-sentence" ref={ref} onClick={handleClick}>
-      {tokens.map((tok, i) =>
-        lookup(doc, tok) ? (
-          <span key={i} className="news-word" data-token={tok}>
-            {tok}
-          </span>
+      {segments.map((seg, i) =>
+        seg.kind === 'space' ? (
+          // The only place a line is allowed to break.
+          <span key={i}>{seg.text}</span>
         ) : (
-          <span key={i}>{tok}</span>
+          // A chunk never breaks, so punctuation stays glued to its word.
+          <span key={i} className="news-chunk">
+            {seg.tokens.map((tk, j) =>
+              tk.word && lookup(doc, tk.text) ? (
+                <span key={j} className="news-word" data-token={tk.text}>
+                  {tk.text}
+                </span>
+              ) : (
+                <span key={j}>{tk.text}</span>
+              ),
+            )}
+          </span>
         ),
       )}
     </span>

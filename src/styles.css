@@ -657,6 +657,7 @@ body {
   margin: 0 0 0.5rem;
   font-size: calc(1.55rem * var(--font-scale));
   line-height: 1.25;
+  text-wrap: balance;
 }
 
 .news-meta {
@@ -679,10 +680,17 @@ body {
   margin: 0 0 1rem;
   font-size: calc(1.1rem * var(--font-scale));
   line-height: 1.75;
+  /* Balance the last lines and let Safari hang punctuation into the margins. */
+  text-wrap: pretty;
+  hanging-punctuation: first allow-end last;
 }
 
 /* Tappable words sit inline and read like normal text until tapped. */
 .news-sentence { display: inline; }
+/* A chunk is a word plus the punctuation glued to it (e.g. `"Meer`, `uitgeven?`).
+   It must never wrap internally, so punctuation can't be stranded at a line edge
+   — lines may only break at the spaces between chunks. */
+.news-chunk { white-space: nowrap; }
 .news-word {
   display: inline;
   color: inherit;
