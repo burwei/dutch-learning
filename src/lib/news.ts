@@ -24,6 +24,36 @@ export function normSentence(s: string): string {
     .trim()
 }
 
+// A sentence boundary: sentence-ending punctuation (with any closing quote /
+// bracket), then whitespace, where the next sentence opens with a capital,
+// quote, or paren. We split *after* the whitespace so an opening quote leads
+// the next sentence. Mirrors split_sentences() in fetch_daily_news.py — the two
+// must agree so stored translations line up with the sentences we render — and
+// won't split inside numbers like "50.000" (no whitespace after the dot).
+const SENTENCE_END = /[.!?]["'”’)\]]*\s+(?=["“„'(¿¡A-ZÀ-Þ])/g
+
+// Split one block of text into sentence strings, keeping every character.
+export function splitSentences(text: string): string[] {
+  const out: string[] = []
+  let last = 0
+  let m: RegExpExecArray | null
+  SENTENCE_END.lastIndex = 0
+  while ((m = SENTENCE_END.exec(text))) {
+    const end = m.index + m[0].length
+    out.push(text.slice(last, end))
+    last = end
+  }
+  if (last < text.length) out.push(text.slice(last))
+  return out.filter((s) => s.trim())
+}
+
+// Every sentence of the article in document order: title first, then each body
+// paragraph. This is the order translations are stored in, and the order we
+// render words in (see NewsView), so a translation lines up by index.
+function articleSentences(title: string, body: string): string[] {
+  return [title, ...body.split(/\n{2,}/)].flatMap(splitSentences)
+}
+
 function header(text: string, key: string): string {
   const m = text.match(new RegExp(`^${key}:\\s*(.*)$`, 'm'))
   return m ? m[1].trim() : ''
@@ -41,22 +71,32 @@ function articleBody(text: string): string {
   return text.slice(from, to).trim()
 }
 
-// `dutch | english` lines between [TRANSLATIONS] and [WORDDATA] -> a lookup
-// keyed by the whitespace-normalised Dutch sentence.
-function translations(text: string): Record<string, string> {
+// The [TRANSLATIONS] section is English-only — one line per article sentence,
+// in document order. The Dutch isn't repeated here (it already lives in
+// [ARTICLE]); we recover each Dutch key by splitting the article ourselves.
+function translationLines(text: string): string[] {
   const start = text.indexOf(TRANSLATIONS)
-  if (start < 0) return {}
+  if (start < 0) return []
   const from = start + TRANSLATIONS.length
   const end = text.indexOf(WORDDATA, from)
   const block = text.slice(from, end >= 0 ? end : text.length)
+  // Drop the single newline after the marker and any trailing blanks, but keep
+  // interior blank lines so the line index stays aligned with the sentences.
+  return block.replace(/^\n/, '').replace(/\n+$/, '').split('\n')
+}
+
+// Zip the article's sentences (in order) with the English lines to rebuild the
+// normalised-Dutch -> English map the rest of the app uses.
+function buildTranslations(
+  title: string,
+  body: string,
+  lines: string[],
+): Record<string, string> {
   const map: Record<string, string> = {}
-  for (const line of block.split('\n')) {
-    const sep = line.indexOf(' | ')
-    if (sep < 0) continue
-    const nl = normSentence(line.slice(0, sep))
-    const en = line.slice(sep + 3).trim()
-    if (nl && en) map[nl] = en
-  }
+  articleSentences(title, body).forEach((sentence, i) => {
+    const en = (lines[i] ?? '').trim()
+    if (en) map[normSentence(sentence)] = en
+  })
   return map
 }
 
@@ -73,14 +113,16 @@ function wordIndex(text: string): Record<string, string> {
 
 function parse(path: string, text: string): NewsDoc {
   const fileDate = path.split('/').pop()!.replace(/\.txt$/i, '')
+  const title = header(text, 'Title')
+  const body = articleBody(text)
   return {
     date: header(text, 'Date') || fileDate,
-    title: header(text, 'Title'),
+    title,
     reporter: header(text, 'Reporter'),
     source: header(text, 'Source'),
-    body: articleBody(text),
+    body,
     index: wordIndex(text),
-    translations: translations(text),
+    translations: buildTranslations(title, body, translationLines(text)),
   }
 }
 

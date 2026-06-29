@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { NewsDoc, WordEntry } from '../types'
-import { lookup, translate, normSentence } from '../lib/news'
+import { lookup, translate, normSentence, splitSentences } from '../lib/news'
 
 interface Props {
   docs: NewsDoc[]
@@ -25,30 +25,8 @@ interface Translation {
 
 // Split a piece of text into word / non-word runs, keeping everything so the
 // text renders verbatim. Words become tappable; punctuation/spaces stay inert.
+// (Sentence splitting lives in ../lib/news so the parser and the renderer agree.)
 const TOKEN = /\p{L}[\p{L}'’\-]*|[^\p{L}]+/gu
-
-// A sentence boundary: sentence-ending punctuation (with any closing quote /
-// bracket), then whitespace, where the next sentence opens with a capital,
-// quote, or paren. We split *after* the whitespace so an opening quote leads
-// the next sentence. This mirrors the splitter in scripts/fetch_daily_news.py
-// (so a tapped sentence matches a stored translation) and won't split inside
-// numbers like "50.000" (no whitespace after the dot).
-const SENTENCE_END = /[.!?]["'”’)\]]*\s+(?=["“„'(¿¡A-ZÀ-Þ])/g
-
-// Split text into sentence strings, keeping every character.
-function splitSentences(text: string): string[] {
-  const sentences: string[] = []
-  let last = 0
-  let m: RegExpExecArray | null
-  SENTENCE_END.lastIndex = 0
-  while ((m = SENTENCE_END.exec(text))) {
-    const end = m.index + m[0].length
-    sentences.push(text.slice(last, end))
-    last = end
-  }
-  if (last < text.length) sentences.push(text.slice(last))
-  return sentences.filter((s) => s.trim())
-}
 
 // One sentence: inert text with tappable words inside, plus the gesture model.
 // - single tap on a word  -> word definition (debounced so a double-tap wins)

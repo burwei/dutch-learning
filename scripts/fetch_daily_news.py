@@ -147,6 +147,33 @@ def stored_lemmas() -> set[str]:
     return lemmas
 
 
+# Sentence boundary — mirror SENTENCE_END / splitSentences in src/lib/news.ts so
+# the app re-derives the exact same sentences (and thus lines up the English-only
+# translations by index).
+SENTENCE_END = re.compile(r"[.!?][\"'”’)\]]*\s+(?=[\"“„'(¿¡A-ZÀ-Þ])")
+
+
+def split_sentences(text: str) -> list[str]:
+    """Split one block of text into sentence strings, keeping every character."""
+    out, last = [], 0
+    for m in SENTENCE_END.finditer(text):
+        out.append(text[last:m.end()])
+        last = m.end()
+    if last < len(text):
+        out.append(text[last:])
+    return [s for s in out if s.strip()]
+
+
+def article_sentences(title: str, body: str) -> list[str]:
+    """Every sentence in document order: title first, then each body paragraph.
+    This is the order translations are written in and the order the app renders,
+    so an English line lines up with its sentence by index."""
+    out: list[str] = []
+    for block in [title, *re.split(r"\n{2,}", body)]:
+        out.extend(split_sentences(block))
+    return out
+
+
 def sentence_for(body: str, forms: list[str]) -> str:
     """The first full article sentence that contains one of the surface forms."""
     flat = re.sub(r"\s+", " ", body)
@@ -258,20 +285,12 @@ WORD_SCHEMA = {
                 ],
             },
         },
-        "sentences": {
+        "translations": {
             "type": "array",
-            "items": {
-                "type": "object",
-                "additionalProperties": False,
-                "properties": {
-                    "dutch": {"type": "string"},
-                    "english": {"type": "string"},
-                },
-                "required": ["dutch", "english"],
-            },
+            "items": {"type": "string"},
         },
     },
-    "required": ["words", "sentences"],
+    "required": ["words", "translations"],
 }
 
 INSTRUCTIONS = """\
@@ -299,16 +318,14 @@ maps a tapped word back to your entry, so be exhaustive and exact.
 - For nouns: article ('de' or 'het') and plural. Leave empty for non-nouns.
 - Leave any field that does not apply as an empty string "" (never null).
 
-Also produce "sentences": a full English translation of the article for the \
-"double-tap a sentence to translate" feature. Include the title as the first \
-entry, then every sentence of the body in order. For each:
-- dutch: the sentence exactly as it appears in the article (verbatim, including \
-its punctuation), as ONE line with single spaces between words.
-- english: a natural, faithful English translation of that whole sentence.
-Split on sentence boundaries (. ! ?); keep quoted speech together with the \
-sentence it belongs to.
+Also produce "translations": natural English translations for the numbered \
+Dutch sentences listed in the user message (these power "double-tap a sentence \
+to translate"). Return ONE translation per numbered sentence, in the SAME ORDER, \
+so that translations[i] matches sentence i. The array length MUST equal the \
+number of sentences given. Do not add, drop, split, or merge sentences — only \
+translate the ones provided.
 
-Output JSON shaped as {"words": [ ...entries... ], "sentences": [ ...pairs... ]} \
+Output JSON shaped as {"words": [ ...entries... ], "translations": [ ...strings... ]} \
 and nothing else.
 """
 
@@ -316,15 +333,19 @@ and nothing else.
 # --- Anthropic API path (used only by `auto`) --------------------------------
 
 
-def enrich_with_claude(article: dict, model: str) -> tuple[list[dict], list[dict]]:
+def enrich_with_claude(article: dict, model: str) -> tuple[list[dict], list[str]]:
     import anthropic  # imported lazily so the agent flow needs no SDK
 
     client = anthropic.Anthropic()
+    sentences = article_sentences(article["title"], article["body"])
+    numbered = "\n".join(f"{i + 1}. {s}" for i, s in enumerate(sentences))
     user = (
         f"Article title: {article['title']}\n\n"
         f"Article text:\n{article['body']}\n\n"
         "Produce click-to-define entries for every distinct word, plus a "
-        "sentence-by-sentence English translation."
+        f'"translations" array with exactly {len(sentences)} items: a natural '
+        "English translation of each numbered sentence below, in the same order.\n\n"
+        f"Sentences to translate:\n{numbered}"
     )
     message = client.messages.create(
         model=model,
@@ -339,7 +360,7 @@ def enrich_with_claude(article: dict, model: str) -> tuple[list[dict], list[dict
     )
     text = "".join(block.text for block in message.content if block.type == "text")
     payload = json.loads(text)
-    return payload["words"], payload.get("sentences", [])
+    return payload["words"], payload.get("translations", [])
 
 
 # --- Assemble the daily file -------------------------------------------------
@@ -360,20 +381,23 @@ def build_index(words: list[dict]) -> dict:
     return index
 
 
-def translation_lines(sentences: list[dict]) -> list[str]:
-    """`dutch | english` per line. Whitespace in the Dutch side is collapsed so
-    keys match how the app normalises a tapped sentence (see src/lib/news.ts)."""
-    zero_width = "[\u200b-\u200d\ufeff]"
-    lines: list[str] = []
-    for s in sentences:
-        nl = re.sub(r"\s+", " ", re.sub(zero_width, "", s.get("dutch") or "")).strip()
-        en = re.sub(r"\s+", " ", (s.get("english") or "")).strip()
-        if nl and en:
-            lines.append(f"{nl} | {en}")
-    return lines
+def translation_lines(article: dict, translations: list[str]) -> list[str]:
+    """One English line per article sentence, in document order \u2014 the Dutch is
+    NOT repeated (it already lives under [ARTICLE]); the app re-derives each
+    sentence by splitting the article the same way. Translations are aligned to
+    article_sentences(); a length mismatch is padded/truncated (and warned)."""
+    sentences = article_sentences(article["title"], article["body"])
+    if len(translations) != len(sentences):
+        print(f"WARNING: {len(translations)} translations for {len(sentences)} "
+              f"sentences \u2014 padding/truncating to match.", file=sys.stderr)
+    out: list[str] = []
+    for i in range(len(sentences)):
+        en = translations[i] if i < len(translations) else ""
+        out.append(re.sub(r"\s+", " ", en or "").strip())
+    return out
 
 
-def render_file(article: dict, index: dict, sentences: list[dict]) -> str:
+def render_file(article: dict, index: dict, translations: list[str]) -> str:
     data = json.dumps({"index": index}, ensure_ascii=False, indent=2, sort_keys=True)
     return "\n".join([
         f"Title: {article['title']}",
@@ -386,7 +410,7 @@ def render_file(article: dict, index: dict, sentences: list[dict]) -> str:
         article["body"],
         "",
         TRANSLATIONS_MARKER,
-        *translation_lines(sentences),
+        *translation_lines(article, translations),
         "",
         WORDDATA_MARKER,
         "```json",
@@ -396,13 +420,13 @@ def render_file(article: dict, index: dict, sentences: list[dict]) -> str:
     ])
 
 
-def write_news_file(article: dict, words: list[dict], sentences: list[dict], bump: bool) -> Path:
+def write_news_file(article: dict, words: list[dict], translations: list[str], bump: bool) -> Path:
     summary = persist_new_words(words, article)
     added = sum(summary.values())
     index = build_index(words)
     NEWS_DIR.mkdir(exist_ok=True)
     out_path = NEWS_DIR / f"{article['date']}.txt"
-    out_path.write_text(render_file(article, index, sentences), encoding="utf-8")
+    out_path.write_text(render_file(article, index, translations), encoding="utf-8")
     bits = ", ".join(f"{k}:{v}" for k, v in summary.items() if v)
     print(f"Wrote {out_path.relative_to(REPO_ROOT)} "
           f"({len(index)} clickable forms; {added} new words stored"
@@ -458,7 +482,13 @@ def cmd_fetch(args) -> None:
         print(article["body"])
         return
     WORK_DIR.mkdir(parents=True, exist_ok=True)
-    job = {**article, "instructions": INSTRUCTIONS, "schema": WORD_SCHEMA}
+    job = {
+        **article,
+        "instructions": INSTRUCTIONS,
+        "schema": WORD_SCHEMA,
+        # The exact sentence list the agent must translate 1:1 (same order).
+        "sentences": article_sentences(article["title"], article["body"]),
+    }
     jp = job_path(article["date"])
     jp.write_text(json.dumps(job, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"JOB_FILE: {jp.relative_to(REPO_ROOT)}", file=sys.stderr)
@@ -477,13 +507,13 @@ def cmd_build(args) -> None:
     article = {k: job[k] for k in ("title", "date", "reporter", "url", "category", "body")}
     payload = json.loads(wp.read_text(encoding="utf-8"))
     words = payload["words"]
-    sentences = payload.get("sentences", [])
+    translations = payload.get("translations", [])
     out = NEWS_DIR / f"{article['date']}.txt"
     if out.exists() and not args.force:
         print(f"NOTHING_TO_DO: {out.relative_to(REPO_ROOT)} already exists "
               f"(use --force to regenerate).", file=sys.stderr)
         return
-    write_news_file(article, words, sentences, bump=not args.no_version_bump)
+    write_news_file(article, words, translations, bump=not args.no_version_bump)
 
 
 def cmd_auto(args) -> None:
@@ -500,8 +530,8 @@ def cmd_auto(args) -> None:
     if not os.environ.get("ANTHROPIC_API_KEY"):
         raise SystemExit("ANTHROPIC_API_KEY is not set; cannot enrich the article.")
     print("Enriching with Claude...", file=sys.stderr)
-    words, sentences = enrich_with_claude(article, args.model)
-    write_news_file(article, words, sentences, bump=not args.no_version_bump)
+    words, translations = enrich_with_claude(article, args.model)
+    write_news_file(article, words, translations, bump=not args.no_version_bump)
 
 
 def main() -> None:

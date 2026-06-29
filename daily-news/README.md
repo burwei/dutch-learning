@@ -24,7 +24,8 @@ Category: <NOS section, e.g. Politiek>
 <full article text, paragraphs separated by blank lines>
 
 [TRANSLATIONS]
-<dutch sentence> | <english translation>
+<english translation of sentence 1>
+<english translation of sentence 2>
 ...
 
 [WORDDATA]
@@ -35,9 +36,11 @@ Category: <NOS section, e.g. Politiek>
 
 - `[ARTICLE]`, `[TRANSLATIONS]` and `[WORDDATA]` are section markers shared with
   the generator and the web app (`src/lib/news.ts`) — don't rename them.
-- `[TRANSLATIONS]` holds one `dutch | english` line per sentence (title first),
-  powering double-tap-to-translate. The Dutch side is whitespace-normalised so
-  it matches how the app keys a tapped sentence.
+- `[TRANSLATIONS]` holds **English only** — one line per article sentence, in
+  document order (title first, then the body), powering double-tap-to-translate.
+  The Dutch isn't repeated here (it already lives in `[ARTICLE]`); the app splits
+  the article into sentences the same way the generator does and lines each
+  translation up by position.
 - `index` maps every word **as it appears** in the article (including inflected
   forms, lowercased) to its dictionary `lemma`. The app looks the lemma up in
   the vocab lists / lexicon to show the definition.

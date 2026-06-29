@@ -17,9 +17,10 @@ The script splits the job into two steps so an agent can sit in the middle:
    `daily-news/.work/<date>.job.json`. The job file contains the article **and**
    the exact instructions + JSON schema for the word data.
 2. The **agent** reads the job, builds a dictionary entry for every word (with a
-   full-sentence example) plus a sentence-by-sentence English translation, and
-   writes `daily-news/.work/<date>.words.json` as
-   `{"words": [ ... ], "sentences": [ {"dutch", "english"}, ... ]}`.
+   full-sentence example) and translates each sentence in the job's `sentences`
+   list 1:1, writing `daily-news/.work/<date>.words.json` as
+   `{"words": [ ... ], "translations": [ "<english>", ... ]}` — one English
+   string per job sentence, in the same order.
 3. `build` — reads the job + words, appends words **new** to your lists
    (`vocab/<type>/news.csv` and `vocab/other/other.csv`), writes the slim
    `daily-news/<date>.txt` (article + index only), and bumps the patch version
@@ -65,11 +66,12 @@ You maintain the daily Dutch news file for this repo. Do this once now:
    "schema". Follow the instructions exactly: produce one dictionary entry for
    EVERY distinct word in the article (content words and function words), with
    inflected forms grouped under their lemma via "surface_forms". Also produce
-   "sentences": a sentence-by-sentence English translation (title first, then the
-   body in order) for the double-tap-to-translate feature.
+   "translations": one natural English translation for each Dutch sentence in the
+   job's "sentences" array, in the same order (this powers double-tap-to-
+   translate). Return exactly as many translations as there are sentences.
 
 3. Write your result to the WORDS_FILE as JSON shaped exactly like
-   {"words": [ ...entries... ], "sentences": [ {"dutch", "english"}, ... ]},
+   {"words": [ ...entries... ], "translations": [ "<english>", ... ]},
    matching the schema in the job file. Every entry must include all required
    fields; use "" for fields that don't apply.
 
@@ -107,6 +109,6 @@ You can rehearse the whole flow locally before scheduling it — you act as the
 ```bash
 python3 scripts/fetch_daily_news.py fetch
 # open daily-news/.work/<date>.job.json, write the entries to
-# daily-news/.work/<date>.words.json as {"words":[...],"sentences":[...]}, then:
+# daily-news/.work/<date>.words.json as {"words":[...],"translations":[...]}, then:
 python3 scripts/fetch_daily_news.py build --date <date>
 ```
