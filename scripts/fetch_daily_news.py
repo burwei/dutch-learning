@@ -174,6 +174,25 @@ def article_sentences(title: str, body: str) -> list[str]:
     return out
 
 
+# A clickable word, tokenised the same way the app does (src/lib/article.ts): a
+# letter followed by letters / apostrophes / hyphens (no digits). \w under
+# re.UNICODE covers accented Dutch letters; [^\W\d_] is "\w minus digits and _".
+_LETTER = r"[^\W\d_]"
+WORD_RE = re.compile(rf"{_LETTER}(?:{_LETTER}|['’\-])*", re.UNICODE)
+
+
+def article_words(title: str, body: str) -> list[str]:
+    """Every distinct clickable word in the title + body, lowercased — the set
+    the app expects to be able to define. Title words count too: a word that
+    appears only in the headline still needs an entry, or it isn't tappable."""
+    out: set[str] = set()
+    for m in WORD_RE.finditer(f"{title}\n{body}"):
+        w = m.group(0).strip("'’-").lower()
+        if len(w) > 1:  # drop single-letter fragments (e.g. the "G" in "G650ER")
+            out.add(w)
+    return sorted(out)
+
+
 def sentence_for(body: str, forms: list[str]) -> str:
     """The first full article sentence that contains one of the surface forms."""
     flat = re.sub(r"\s+", " ", body)
@@ -295,10 +314,11 @@ WORD_SCHEMA = {
 
 INSTRUCTIONS = """\
 You are a Dutch (NT2) language teacher building "click-to-define" data for a \
-news article aimed at learners. A learner can tap ANY word in the article and \
-see its details, so produce one dictionary entry for every distinct word that \
-appears — content words and common function words alike. Skip pure numbers and \
-punctuation.
+news article aimed at learners. A learner can tap ANY word — in the HEADLINE/TITLE \
+as well as the body — and see its details, so produce one dictionary entry for \
+every distinct word that appears (treat the title as part of the article; do not \
+skip words that occur only in the title). Cover content words and common function \
+words alike. Skip pure numbers and punctuation.
 
 For each entry:
 - lemma: the dictionary form (verb -> infinitive, noun -> singular, \
@@ -339,12 +359,16 @@ def enrich_with_claude(article: dict, model: str) -> tuple[list[dict], list[str]
     client = anthropic.Anthropic()
     sentences = article_sentences(article["title"], article["body"])
     numbered = "\n".join(f"{i + 1}. {s}" for i, s in enumerate(sentences))
+    vocab = article_words(article["title"], article["body"])
     user = (
         f"Article title: {article['title']}\n\n"
         f"Article text:\n{article['body']}\n\n"
         "Produce click-to-define entries for every distinct word, plus a "
         f'"translations" array with exactly {len(sentences)} items: a natural '
         "English translation of each numbered sentence below, in the same order.\n\n"
+        "Every one of these words (from the title AND the body) must be coverable "
+        "by your entries — group inflections under their lemma via surface_forms, "
+        f"and do not skip title-only words:\n{', '.join(vocab)}\n\n"
         f"Sentences to translate:\n{numbered}"
     )
     message = client.messages.create(
@@ -420,6 +444,13 @@ def render_file(article: dict, index: dict, translations: list[str]) -> str:
     ])
 
 
+def missing_words(article: dict, index: dict) -> list[str]:
+    """Title + body words the index can't resolve — i.e. words that would not be
+    clickable in the app. The producer should cover these (title words included)."""
+    keys = set(index)
+    return [w for w in article_words(article["title"], article["body"]) if w not in keys]
+
+
 def write_news_file(article: dict, words: list[dict], translations: list[str], bump: bool) -> Path:
     summary = persist_new_words(words, article)
     added = sum(summary.values())
@@ -431,6 +462,11 @@ def write_news_file(article: dict, words: list[dict], translations: list[str], b
     print(f"Wrote {out_path.relative_to(REPO_ROOT)} "
           f"({len(index)} clickable forms; {added} new words stored"
           f"{' — ' + bits if bits else ''})", file=sys.stderr)
+    missing = missing_words(article, index)
+    if missing:
+        print(f"WARNING: {len(missing)} word(s) won't be clickable (no entry): "
+              f"{', '.join(missing)}. Add them to the words file and re-run "
+              f"`build --force`.", file=sys.stderr)
     if bump:
         print(f"Bumped version to {bump_patch()}", file=sys.stderr)
     return out_path
@@ -488,6 +524,8 @@ def cmd_fetch(args) -> None:
         "schema": WORD_SCHEMA,
         # The exact sentence list the agent must translate 1:1 (same order).
         "sentences": article_sentences(article["title"], article["body"]),
+        # Every clickable word (title + body) the agent must cover with an entry.
+        "vocabulary": article_words(article["title"], article["body"]),
     }
     jp = job_path(article["date"])
     jp.write_text(json.dumps(job, ensure_ascii=False, indent=2), encoding="utf-8")

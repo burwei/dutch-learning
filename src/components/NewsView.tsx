@@ -311,7 +311,7 @@ export function NewsView({ docs, date, onSelectDate }: Props) {
             <>
               <span>·</span>
               <a href={doc.source} target="_blank" rel="noopener noreferrer">
-                NOS
+                link
               </a>
             </>
           )}

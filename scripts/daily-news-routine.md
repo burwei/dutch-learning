@@ -62,13 +62,15 @@ You maintain the daily Dutch news file for this repo. Do this once now:
    - Otherwise note the JOB_FILE, WORDS_FILE, and DATE it prints.
 
 2. Read the JOB_FILE (daily-news/.work/<DATE>.job.json). It contains the article
-   text under "body", the rules under "instructions", and the JSON schema under
-   "schema". Follow the instructions exactly: produce one dictionary entry for
-   EVERY distinct word in the article (content words and function words), with
-   inflected forms grouped under their lemma via "surface_forms". Also produce
-   "translations": one natural English translation for each Dutch sentence in the
-   job's "sentences" array, in the same order (this powers double-tap-to-
-   translate). Return exactly as many translations as there are sentences.
+   text under "body", the rules under "instructions", the JSON schema under
+   "schema", the sentences to translate under "sentences", and — under
+   "vocabulary" — every clickable word from the TITLE and body. Follow the
+   instructions exactly: produce one dictionary entry covering EVERY word in
+   "vocabulary" (title-only words included), with inflected forms grouped under
+   their lemma via "surface_forms". Also produce "translations": one natural
+   English translation for each Dutch sentence in the job's "sentences" array, in
+   the same order (this powers double-tap-to-translate). Return exactly as many
+   translations as there are sentences.
 
 3. Write your result to the WORDS_FILE as JSON shaped exactly like
    {"words": [ ...entries... ], "translations": [ "<english>", ... ]},
@@ -77,7 +79,9 @@ You maintain the daily Dutch news file for this repo. Do this once now:
 
 4. Run:  python3 scripts/fetch_daily_news.py build --date <DATE>
    This appends new words to vocab/<type>/news.csv and vocab/other/other.csv, writes
-   daily-news/<DATE>.txt, and bumps the version in package.json.
+   daily-news/<DATE>.txt, and bumps the version in package.json. If it prints a
+   `WARNING: ... won't be clickable` line, add the listed words to the words file
+   and re-run `build --date <DATE> --force` until there is no warning.
 
 5. Sanity-check daily-news/<DATE>.txt: it must have a Title/Date/Reporter/Source/
    Category header, an [ARTICLE] section, a [TRANSLATIONS] section (one
