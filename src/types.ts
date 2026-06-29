@@ -3,6 +3,10 @@ export type Entry = Record<string, string>
 
 export type VocabType = 'verb' | 'noun' | 'adj' | 'adv'
 
+// A level id is simply a vocab CSV filename without the extension
+// (e.g. "a0-a2_core"). Levels are discovered dynamically from the files.
+export type Level = string
+
 // A "topic" is one thing you can drill for a vocab type (e.g. a verb's English
 // meaning, or its simple past). Defined per type in lib/vocab.ts.
 export interface Topic {
@@ -20,6 +24,7 @@ export interface Topic {
 
 export type Mode = 'flashcard' | 'typing'
 export type Filter = 'all' | 'unknown'
+export type SortMode = 'order' | 'random'
 export type Theme = 'light' | 'dark'
 
 // Per-card mark, stored in localStorage.

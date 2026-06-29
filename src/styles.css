@@ -150,6 +150,25 @@ body {
   align-items: center;
   justify-content: space-between;
 }
+
+.drawer-footer {
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.repo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.repo-link:hover { color: var(--accent); }
+.app-version { font-size: 0.8rem; color: var(--muted); }
 .drawer hr {
   border: none;
   border-top: 1px solid var(--line);
@@ -249,15 +268,6 @@ body {
 .counter-known { color: var(--ok); }
 .counter-score { color: var(--accent); }
 
-.shuffle {
-  border: 1px solid var(--line);
-  background: var(--card);
-  color: var(--ink);
-  padding: 0.3rem 0.7rem;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
 
 /* --- Flashcard ------------------------------------------------------------- */
 /* Card fills most of the screen (desktop + mobile); buttons sit below it. */
@@ -417,6 +427,38 @@ body {
 .answer.ok { border-color: var(--ok); background: var(--ok-soft); }
 .answer.bad { border-color: var(--bad); background: var(--bad-soft); }
 
+.typing-form {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.typing-actions {
+  display: flex;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 22rem;
+}
+
+/* On touch devices the keyboard's action key checks — no Check button needed. */
+@media (hover: none) and (pointer: coarse) {
+  .check-btn { display: none; }
+}
+.typing-actions button { flex: 1; }
+.typing-actions .btn-secondary { padding: 0.7rem 0.9rem; font-size: 1rem; }
+
+.btn-primary {
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn-primary:disabled { opacity: 0.45; cursor: default; }
+
 .result { display: flex; flex-direction: column; gap: 0.3rem; }
 .result-mark { font-size: 1.1rem; font-weight: 600; }
 .result.ok .result-mark { color: var(--ok); }
@@ -487,6 +529,26 @@ body {
   font-weight: 500;
   cursor: pointer;
 }
+
+/* --- Level checkboxes (in drawer) ----------------------------------------- */
+.level-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.level-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.level-check.on { border-color: var(--accent); color: var(--accent); }
+.level-check input { accent-color: var(--accent); cursor: pointer; }
 
 /* --- Font stepper (in drawer) --------------------------------------------- */
 .font-stepper {

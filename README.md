@@ -1,15 +1,12 @@
 # Dutch Vocabulary Flashcards
 
-A local, keyboard-driven flashcard app for memorizing Dutch vocabulary —
-verbs, nouns, adjectives, and adverbs. Runs entirely in the browser: no backend,
-no database, no network calls. Progress is saved in `localStorage`.
+A keyboard- and touch-friendly flashcard app for memorizing Dutch vocabulary.
+Runs entirely in the browser — no backend, no accounts. Progress is saved in
+your browser's `localStorage`.
 
 ## Live app
 
 **https://burwei.github.io/dutch-learning/**
-
-Hosted on GitHub Pages. Every push to `main` rebuilds and redeploys automatically
-(see `.github/workflows/deploy.yml`).
 
 ## Run locally
 
@@ -18,88 +15,61 @@ npm install
 npm run dev
 ```
 
-Open the printed `localhost` URL (default http://localhost:5173).
+Then open the printed `localhost` URL.
 
-## Vocabulary files
+## Use your own vocab files
 
-All word lists live under `vocab/`, grouped by type:
+Vocabulary lives in CSV files under `vocab/`, grouped by word type:
 
 ```
 vocab/
-  verb/   dutch_verbs_a0_to_a2.csv
-  noun/   dutch_nouns_a0_to_a2.csv
-  adj/    dutch_adjectives_a0_to_a2.csv
-  adv/    dutch_adverbs_a0_to_a2.csv
+  verb/   a0-a2_core.csv  b1_core.csv  ...
+  noun/   a0-a2_core.csv  ...
+  adj/    a0-a2_core.csv  ...
+  adv/    a0-a2_core.csv  ...
 ```
 
-To expand a list, drop another CSV into the matching folder (e.g.
-`vocab/verb/dutch_verbs_b1.csv`). Every CSV in a folder is merged automatically;
-just reload the dev server. Pick the type with the **Vocab** toggle in the app.
+- **Each CSV file is a selectable "Level".** The level name shown in the app
+  comes from the filename, e.g. `b1_core.csv` → "B1 Core", `my_words.csv` →
+  "My Words". Drop in a new file and it appears in the Level menu after a reload.
+- All files in a word type's folder are merged for the levels you tick.
 
-### CSV schemas (first row is the header)
+The first row of every file is the header. Columns per type:
 
 | Type | Columns |
 | ---- | ------- |
-| verb | `infinitive,english,present,simple_past,present_perfect` |
-| noun | `dutch,english,article,plural` |
-| adj  | `dutch,english` |
-| adv  | `dutch,english` |
+| verb | `infinitive,english,present,simple_past,present_perfect,example` |
+| noun | `dutch,english,article,plural,example` |
+| adj  | `dutch,english,example` |
+| adv  | `dutch,english,example` |
 
 Notes:
-- Cells may list alternatives with `/` (e.g. `woei/waaide`, `heb/is aangeboden`).
+- `example` is a Dutch example sentence shown on the answer side.
+- Cells may list alternatives with `/` (e.g. `woei/waaide`, `heb/is aangeboden`);
+  in typing mode any alternative is accepted, accents are ignored, and present
+  perfect is accepted with or without its auxiliary.
 - Rows with an empty answer cell are skipped for that topic.
 
-## Topics & modes
+## Vocabulary sources
 
-Pick a **Topic** (what you drill) and a **Mode** (how you drill):
+The included word lists are study aids, **not** official exam lists — there is no
+single official, downloadable, per-level Dutch (NT2) vocabulary list. Levels and
+word selection were guided by:
 
-- **Verbs:** NL → English · Simple past · Present perfect
-- **Nouns:** NL → English · Article (de/het) · Plural
-- **Adjectives / Adverbs:** NL → English
+- **CEFR / Dutch NT2 (Staatsexamen) level descriptors** — the College voor Toetsen
+  en Examens documents word *scope* by reference rather than a closed list, and
+  notes learners are assumed to know roughly 4,000–5,000 words at B1 and
+  11,000–12,000 at B2 ([staatsexamensnt2.nl](https://www.staatsexamensnt2.nl/)).
+- **NT2Lex (CEFRLex)** — an open, CEFR-graded Dutch lexicon (~15k entries, A1–C1),
+  used as a leveling reference ([cental.uclouvain.be/cefrlex/nt2lex](https://cental.uclouvain.be/cefrlex/nt2lex/), CC BY-NC-SA).
+- **A Frequency Dictionary of Dutch** (Tiberius & Schoonheim) — used only as a
+  template for the field shape (word + article + translation + example), not copied.
 
-**Flashcard mode** — see the prompt, flip to reveal, mark known/unknown.
-**Typing mode** — type the answer and check it. For "NL → English" topics the
-direction flips (you see English and type the Dutch word), with a
-first/last-letter hint.
+The actual word entries, translations, conjugations, articles/plurals, and example
+sentences were generated and curated with an LLM against the references above.
+Corrections via pull request are welcome.
 
-### Answer checking (typing mode)
+## Deploying your own copy
 
-- Case-insensitive, whitespace trimmed and collapsed.
-- Accents are ignored (`ë`=`e`, `ï`=`i`, …) — you never need to type diacritics.
-- Any `/`-separated alternative is accepted.
-- Present perfect accepts the participle with or without its auxiliary
-  (`heb gelopen`, `ben gelopen`, and `gelopen` all match `heb/ben gelopen`).
-
-## Keyboard map
-
-**Flashcard mode**
-
-| Key | Action |
-| --- | ------ |
-| `Space` | flip card |
-| `→` | I remember → next |
-| `←` | I don't remember → next |
-| `↓` | next card |
-| `↑` | previous card |
-
-Mouse/touch: click the card to flip, click the side zones or swipe left/right to mark.
-
-**Typing mode**
-
-| Key | Action |
-| --- | ------ |
-| `Enter` | check answer |
-| `Enter` / `→` / `↓` | next card (after checking) |
-
-## Other controls
-
-- **Filter:** All cards vs. Only unknown (drill what you keep missing).
-- **Shuffle:** randomize the current deck.
-- **Reset progress:** clear all known/unknown marks and the session score.
-
-## Build
-
-```bash
-npm run build     # type-check + production build into dist/
-npm run preview   # preview the production build
-```
+Push to `main` — GitHub Pages rebuilds automatically (see
+`.github/workflows/deploy.yml`; set `base` in `vite.config.ts` to your repo name).

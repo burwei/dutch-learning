@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Entry, VocabType, Mode, Filter, Mark, Progress, Theme } from './types'
+import type {
+  Entry,
+  VocabType,
+  Mode,
+  Filter,
+  SortMode,
+  Level,
+  Mark,
+  Progress,
+  Theme,
+} from './types'
 import { VOCAB, loadVocab } from './lib/vocab'
 import { relevantEntries, shuffle } from './lib/deck'
 import {
@@ -13,6 +23,8 @@ import {
   saveFontScale,
   loadPosition,
   savePosition,
+  loadLevels,
+  saveLevels,
   FONT_MIN,
   FONT_MAX,
   FONT_STEP,
@@ -31,6 +43,11 @@ export default function App() {
   const [topicId, setTopicId] = useState<string>('english')
   const [mode, setMode] = useState<Mode>('flashcard')
   const [filter, setFilter] = useState<Filter>('all')
+  const [sortMode, setSortMode] = useState<SortMode>('order')
+  const [levels, setLevels] = useState<Level[]>(loadLevels)
+  useEffect(() => {
+    saveLevels(levels)
+  }, [levels])
 
   // Progress + session score.
   const [progress, setProgress] = useState<Progress>(loadProgress)
@@ -60,7 +77,7 @@ export default function App() {
   const config = VOCAB[vocabType]
   const topic = config.topics.find((t) => t.id === topicId) ?? config.topics[0]
 
-  const key = progressKey(vocabType, topic.id)
+  const key = progressKey(mode, vocabType, topic.id)
   const idOf = (e: Entry) => `${key}:${config.headword(e)}`
   const markOf = (e: Entry): Mark | undefined => progress[idOf(e)]
 
@@ -72,17 +89,18 @@ export default function App() {
 
   // Signature of the current deck context — position is only resumed when this
   // matches what was saved.
-  const sig = `${vocabType}:${topicId}:${filter}`
+  const sig = `${mode}:${vocabType}:${topicId}:${filter}`
 
   // Rebuild the deck whenever the selection changes. We deliberately do NOT
   // rebuild on every mark, so drilling doesn't reshuffle under you — toggle the
   // filter again to refresh the "only unknown" set. On (re)build we resume the
   // last viewed card for this context if we can still find it.
   useEffect(() => {
-    let pool = relevantEntries(loadVocab(vocabType), topic)
+    let pool = relevantEntries(loadVocab(vocabType, levels), topic)
     if (filter === 'unknown') {
       pool = pool.filter((e) => progress[`${key}:${config.headword(e)}`] !== 'known')
     }
+    if (sortMode === 'random') pool = shuffle(pool)
     const saved = loadPosition()
     let start = 0
     if (saved && saved.sig === sig) {
@@ -92,7 +110,7 @@ export default function App() {
     setOrder(pool)
     setIndex(start)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vocabType, topicId, filter])
+  }, [vocabType, topicId, filter, sortMode, mode, levels])
 
   const current = order[index]
 
@@ -113,11 +131,6 @@ export default function App() {
   const next = () => setIndex((i) => (order.length ? (i + 1) % order.length : 0))
   const prev = () =>
     setIndex((i) => (order.length ? (i - 1 + order.length) % order.length : 0))
-
-  const reshuffle = () => {
-    setOrder((o) => shuffle(o))
-    setIndex(0)
-  }
 
   // Only ever called from the confirmation dialog — progress is never cleared
   // by any other code path.
@@ -171,6 +184,8 @@ export default function App() {
         topics={config.topics}
         mode={mode}
         filter={filter}
+        sortMode={sortMode}
+        levels={levels}
         theme={theme}
         fontScale={fontScale}
         fontMin={FONT_MIN}
@@ -180,6 +195,12 @@ export default function App() {
         onTopic={setTopicId}
         onMode={setMode}
         onFilter={setFilter}
+        onSort={setSortMode}
+        onToggleLevel={(lvl) =>
+          setLevels((cur) =>
+            cur.includes(lvl) ? cur.filter((l) => l !== lvl) : [...cur, lvl],
+          )
+        }
         onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
         onFont={(delta) => changeFont(delta)}
         onReset={() => {
@@ -209,9 +230,6 @@ export default function App() {
                   score {score.correct}/{score.attempted}
                 </span>
               )}
-              <button className="shuffle" onClick={reshuffle}>
-                🔀 Shuffle
-              </button>
             </div>
 
             {mode === 'flashcard' ? (

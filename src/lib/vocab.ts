@@ -1,5 +1,5 @@
 import Papa from 'papaparse'
-import type { Entry, VocabType, Topic } from '../types'
+import type { Entry, VocabType, Level, Topic } from '../types'
 
 // --- Config: one block per vocab type ---------------------------------------
 //
@@ -27,7 +27,7 @@ export const VOCAB: Record<VocabType, VocabConfig> = {
     topics: [
       {
         id: 'english',
-        label: 'NL → English',
+        label: 'English',
         front: (e) => e.infinitive,
         back: (e) => e.english,
         // Typing flips direction: show English, type the Dutch infinitive.
@@ -60,7 +60,7 @@ export const VOCAB: Record<VocabType, VocabConfig> = {
     topics: [
       {
         id: 'english',
-        label: 'NL → English',
+        label: 'English',
         front: (e) => e.dutch,
         back: (e) => e.english,
         typingPrompt: (e) => e.english,
@@ -91,7 +91,7 @@ export const VOCAB: Record<VocabType, VocabConfig> = {
     topics: [
       {
         id: 'english',
-        label: 'NL → English',
+        label: 'English',
         front: (e) => e.dutch,
         back: (e) => e.english,
         typingPrompt: (e) => e.english,
@@ -106,7 +106,7 @@ export const VOCAB: Record<VocabType, VocabConfig> = {
     topics: [
       {
         id: 'english',
-        label: 'NL → English',
+        label: 'English',
         front: (e) => e.dutch,
         back: (e) => e.english,
         typingPrompt: (e) => e.english,
@@ -126,6 +126,48 @@ const csvFiles = import.meta.glob('/vocab/**/*.csv', {
   eager: true,
 }) as Record<string, string>
 
+// A "level" is just a CSV file: its id is the filename (without .csv), so anyone
+// can clone the repo and add vocab/<type>/<level>.csv and it appears as a level.
+function levelIdFromPath(path: string): Level {
+  return path.split('/').pop()!.replace(/\.csv$/i, '')
+}
+
+// Pretty label for a level id: "a0-a2_core" -> "A0-A2 Core", "my_words" -> "My Words".
+export function levelLabel(id: Level): string {
+  return id
+    .split('_')
+    .map((t) =>
+      /^[a-c]\d/i.test(t) || t.includes('-')
+        ? t.toUpperCase()
+        : t.charAt(0).toUpperCase() + t.slice(1),
+    )
+    .join(' ')
+}
+
+// Sort known CEFR bands first (and core before full), then anything else.
+const BASE_ORDER = ['a0-a2', 'a0', 'a1', 'a2', 'b1', 'b2', 'c1', 'c2']
+function levelSortKey(id: Level): [number, number, string] {
+  const [base, variant = ''] = id.split('_')
+  const b = BASE_ORDER.indexOf(base)
+  const v = variant === 'core' ? 0 : variant === 'full' ? 1 : 2
+  return [b < 0 ? 99 : b, v, id]
+}
+
+// Every level id present across all vocab folders, sorted, with labels.
+export function availableLevels(): { id: Level; label: string }[] {
+  const ids = new Set<Level>()
+  for (const path of Object.keys(csvFiles)) {
+    if (path.includes('/vocab/')) ids.add(levelIdFromPath(path))
+  }
+  return [...ids]
+    .sort((a, b) => {
+      const ka = levelSortKey(a)
+      const kb = levelSortKey(b)
+      return ka[0] - kb[0] || ka[1] - kb[1] || ka[2].localeCompare(kb[2])
+    })
+    .map((id) => ({ id, label: levelLabel(id) }))
+}
+
 function parse(text: string): Entry[] {
   const result = Papa.parse<Entry>(text, {
     header: true,
@@ -135,11 +177,14 @@ function parse(text: string): Entry[] {
   return result.data
 }
 
-// All entries for a vocab type, merged across every CSV in its folder.
-export function loadVocab(type: VocabType): Entry[] {
+// All entries for a vocab type, restricted to the chosen levels and merged
+// across every matching CSV in the type's folder.
+export function loadVocab(type: VocabType, levels: Level[]): Entry[] {
   const entries: Entry[] = []
   for (const [path, text] of Object.entries(csvFiles)) {
-    if (path.includes(`/vocab/${type}/`)) entries.push(...parse(text))
+    if (!path.includes(`/vocab/${type}/`)) continue
+    if (!levels.includes(levelIdFromPath(path))) continue
+    entries.push(...parse(text))
   }
   // Drop rows without a headword.
   return entries.filter((e) => VOCAB[type].headword(e)?.trim())

@@ -98,9 +98,13 @@ export function Flashcard(props: Props) {
     setFlipped((f) => !f)
   }
 
-  // When the fly-off transition finishes, actually mark + advance.
-  const onTransitionEnd = () => {
-    if (!leaving) return
+  // When the fly-off transition finishes, actually mark + advance. The card
+  // transitions both transform and opacity, so transitionend fires twice —
+  // only act on the transform one (and guard against re-entry).
+  const advanced = useRef(false)
+  const onTransitionEnd = (e: React.TransitionEvent) => {
+    if (!leaving || advanced.current || e.propertyName !== 'transform') return
+    advanced.current = true
     if (leaving === 'right') props.onRemember()
     else props.onForget()
   }
