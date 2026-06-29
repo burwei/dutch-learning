@@ -1,5 +1,5 @@
 import Papa from 'papaparse'
-import type { Entry, VocabType, Level, Topic } from '../types'
+import type { Entry, VocabType, Level, Topic, WordEntry } from '../types'
 
 // --- Config: one block per vocab type ---------------------------------------
 //
@@ -176,6 +176,76 @@ function parse(text: string): Entry[] {
   })
   return result.data
 }
+
+// --- Click-to-define dictionary --------------------------------------------
+//
+// Every word the news reader can define lives once, in the vocab CSVs (verb/
+// noun/adj/adv across all levels, including news.csv) or in lexicon/*.csv
+// (function words, names — not flashcard levels). A daily-news file only stores
+// a surface-form -> lemma index; the definition is looked up here by lemma.
+
+const lexiconFiles = import.meta.glob('/lexicon/*.csv', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>
+
+function emptyEntry(): WordEntry {
+  return {
+    pos: 'other',
+    english: '',
+    example: '',
+    article: '',
+    plural: '',
+    present: '',
+    simple_past: '',
+    present_perfect: '',
+  }
+}
+
+// lemma (lowercased) -> definition. Built once at load; first definition wins,
+// so a curated core entry takes precedence over a later news/lexicon one.
+export const newsDictionary: Record<string, WordEntry> = (() => {
+  const dict: Record<string, WordEntry> = {}
+  const add = (lemma: string, entry: WordEntry) => {
+    const key = lemma.trim().toLowerCase()
+    if (key && !(key in dict)) dict[key] = entry
+  }
+
+  for (const [path, text] of Object.entries(csvFiles)) {
+    const m = path.match(/\/vocab\/(verb|noun|adj|adv)\//)
+    if (!m) continue
+    const pos = m[1] as WordEntry['pos']
+    for (const row of parse(text)) {
+      const lemma = (row.infinitive || row.dutch || '').trim()
+      if (!lemma) continue
+      add(lemma, {
+        pos,
+        english: row.english || '',
+        example: row.example || '',
+        article: row.article || '',
+        plural: row.plural || '',
+        present: row.present || '',
+        simple_past: row.simple_past || '',
+        present_perfect: row.present_perfect || '',
+      })
+    }
+  }
+
+  for (const text of Object.values(lexiconFiles)) {
+    for (const row of parse(text)) {
+      const lemma = (row.dutch || '').trim()
+      if (!lemma) continue
+      const entry = emptyEntry()
+      entry.pos = (row.pos as WordEntry['pos']) || 'other'
+      entry.english = row.english || ''
+      entry.example = row.example || ''
+      add(lemma, entry)
+    }
+  }
+
+  return dict
+})()
 
 // All entries for a vocab type, restricted to the chosen levels and merged
 // across every matching CSV in the type's folder.

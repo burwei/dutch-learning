@@ -1,10 +1,21 @@
 import { useEffect } from 'react'
-import type { VocabType, Mode, Filter, SortMode, Level, Topic, Theme } from '../types'
+import type {
+  VocabType,
+  Mode,
+  Filter,
+  SortMode,
+  Level,
+  Topic,
+  Theme,
+  TopView,
+} from '../types'
 import { VOCAB, VOCAB_TYPES, availableLevels } from '../lib/vocab'
 
 interface Props {
   open: boolean
   onClose: () => void
+  view: TopView
+  onView: (v: TopView) => void
   vocabType: VocabType
   topicId: string
   topics: Topic[]
@@ -79,11 +90,23 @@ export function Drawer(props: Props) {
         </div>
 
         <Toggle
-          label="Vocab"
-          value={props.vocabType}
-          onChange={props.onVocab}
-          options={VOCAB_TYPES.map((t) => ({ value: t, text: VOCAB[t].label }))}
+          label="View"
+          value={props.view}
+          onChange={props.onView}
+          options={[
+            { value: 'vocab', text: 'Vocab' },
+            { value: 'news', text: 'News' },
+          ]}
         />
+
+        {props.view === 'vocab' && (
+          <>
+            <Toggle
+              label="Vocab"
+              value={props.vocabType}
+              onChange={props.onVocab}
+              options={VOCAB_TYPES.map((t) => ({ value: t, text: VOCAB[t].label }))}
+            />
 
         <div className="toggle">
           <span className="toggle-label">Level</span>
@@ -140,13 +163,15 @@ export function Drawer(props: Props) {
             { value: 'random', text: 'Random' },
           ]}
         />
+          </>
+        )}
 
         <hr />
 
         <div className="drawer-row">
           <span className="toggle-label">Theme</span>
           <button className="theme-toggle" onClick={props.onToggleTheme}>
-            {props.theme === 'dark' ? '☀️ Light' : '🌙 Dark'}
+            {props.theme === 'dark' ? 'Light' : 'Dark'}
           </button>
         </div>
 

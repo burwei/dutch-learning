@@ -9,8 +9,10 @@ import type {
   Mark,
   Progress,
   Theme,
+  TopView,
 } from './types'
 import { VOCAB, loadVocab } from './lib/vocab'
+import { listNews } from './lib/news'
 import { relevantEntries, shuffle } from './lib/deck'
 import {
   loadProgress,
@@ -32,11 +34,43 @@ import {
 import { Drawer } from './components/Drawer'
 import { Flashcard } from './components/Flashcard'
 import { Typing } from './components/Typing'
+import { NewsView } from './components/NewsView'
 
 export default function App() {
   // Settings drawer + reset confirmation dialog.
   const [menuOpen, setMenuOpen] = useState(false)
   const [confirmReset, setConfirmReset] = useState(false)
+
+  // Top-level section: vocab drills or the daily news reader. The view and the
+  // open article are mirrored in the URL hash (e.g. #/news/2026-06-29) so an
+  // article is shareable and survives a refresh. Hash routing needs no server
+  // config, so it works on GitHub Pages.
+  const news = useMemo(() => listNews(), [])
+  const newsDates = useMemo(() => news.map((n) => n.date), [news])
+  const parseHash = (): { view: TopView; date: string } => {
+    const [section, d] = window.location.hash.replace(/^#\/?/, '').split('/')
+    if (section === 'news') {
+      return { view: 'news', date: newsDates.includes(d) ? d : newsDates[0] ?? '' }
+    }
+    return { view: 'vocab', date: newsDates[0] ?? '' }
+  }
+  const [view, setView] = useState<TopView>(() => parseHash().view)
+  const [newsDate, setNewsDate] = useState<string>(() => parseHash().date)
+
+  useEffect(() => {
+    const target = view === 'news' ? `#/news/${newsDate}` : '#/vocab'
+    if (window.location.hash !== target) window.location.hash = target
+  }, [view, newsDate])
+  useEffect(() => {
+    const onHash = () => {
+      const p = parseHash()
+      setView(p.view)
+      setNewsDate(p.date)
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newsDates])
 
   // Top-level selections.
   const [vocabType, setVocabType] = useState<VocabType>('verb')
@@ -166,19 +200,30 @@ export default function App() {
           ☰
         </button>
         <div className="topbar-context">
-          <span className="ctx-main">
-            {config.label} · {topic.label}
-          </span>
-          <span className="ctx-sub">
-            {mode === 'flashcard' ? 'Flashcard' : 'Typing'}
-            {filter === 'unknown' ? ' · only unknown' : ''}
-          </span>
+          {view === 'vocab' ? (
+            <>
+              <span className="ctx-main">
+                {config.label} · {topic.label}
+              </span>
+              <span className="ctx-sub">
+                {mode === 'flashcard' ? 'Flashcard' : 'Typing'}
+                {filter === 'unknown' ? ' · only unknown' : ''}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="ctx-main">Daily news</span>
+              <span className="ctx-sub">NOS headline · tap a word</span>
+            </>
+          )}
         </div>
       </header>
 
       <Drawer
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
+        view={view}
+        onView={setView}
         vocabType={vocabType}
         topicId={topic.id}
         topics={config.topics}
@@ -210,6 +255,10 @@ export default function App() {
       />
 
       <main className="main">
+        {view === 'news' ? (
+          <NewsView docs={news} date={newsDate} onSelectDate={setNewsDate} />
+        ) : (
+         <>
         {order.length === 0 && (
           <p className="status">
             No cards to show.{' '}
@@ -259,6 +308,8 @@ export default function App() {
               />
             )}
           </>
+        )}
+         </>
         )}
       </main>
 

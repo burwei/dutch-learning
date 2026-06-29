@@ -27,6 +27,35 @@ export type Filter = 'all' | 'unknown'
 export type SortMode = 'order' | 'random'
 export type Theme = 'light' | 'dark'
 
+// Top-level section of the app: drill vocab, or read the daily news.
+export type TopView = 'vocab' | 'news'
+
+// One dictionary entry behind a clickable word. Built from the vocab CSVs and
+// the lexicon, shared across all articles. Fields that don't apply to the word's
+// type are empty strings.
+export interface WordEntry {
+  pos: 'verb' | 'noun' | 'adj' | 'adv' | 'other'
+  english: string
+  example: string
+  article: string // nouns: de/het
+  plural: string // nouns
+  present: string // verbs: ik-form
+  simple_past: string // verbs
+  present_perfect: string // verbs (with auxiliary)
+}
+
+// A parsed daily-news file: the article plus a click-to-define index. `index`
+// maps a lowercased surface form (as it appears in the text) to a lemma; the
+// definition for that lemma is looked up from the shared dictionary.
+export interface NewsDoc {
+  date: string // YYYY-MM-DD
+  title: string
+  reporter: string
+  source: string
+  body: string
+  index: Record<string, string>
+}
+
 // Per-card mark, stored in localStorage.
 export type Mark = 'known' | 'unknown'
 export type Progress = Record<string, Mark>

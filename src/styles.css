@@ -5,11 +5,13 @@
   --ink: #1f2430;
   --muted: #8a93a3;
   --line: #e2e6ec;
-  --accent: #3b6ef0;
   --ok: #1f9d57;
   --bad: #d6453d;
   --ok-soft: #e3f5ec;
   --bad-soft: #fdeceb;
+  /* Dutch orange. Deep enough that white button text stays legible. */
+  --accent: #e0590b;
+  --accent-soft: #fce6d4;
   --shadow: 0 8px 30px rgba(20, 30, 60, 0.08);
   --font-scale: 1;
 }
@@ -21,15 +23,28 @@
   --ink: #e7ebf2;
   --muted: #8b95a7;
   --line: #2c3342;
-  --accent: #5b86f5;
+  --accent: #f2761c;
   --ok: #35c07a;
   --bad: #f06a62;
   --ok-soft: rgba(53, 192, 122, 0.16);
   --bad-soft: rgba(240, 106, 98, 0.16);
+  --accent-soft: rgba(242, 118, 28, 0.2);
   --shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
 }
 
 body { transition: background-color 0.2s ease, color 0.2s ease; }
+
+/* Themed scrollbars so other scroll areas match light/dark. */
+* { scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--muted); background-clip: padding-box; }
 
 * {
   box-sizing: border-box;
@@ -94,6 +109,7 @@ body {
   display: flex;
   flex-direction: column;
   line-height: 1.25;
+  min-width: 0;
 }
 .ctx-main { font-weight: 600; font-size: 0.95rem; }
 .ctx-sub { font-size: 0.78rem; color: var(--muted); }
@@ -220,6 +236,7 @@ body {
   margin-left: auto;
   border: 1px solid var(--line);
   background: var(--card);
+  color: var(--ink);
   border-radius: 8px;
   padding: 0.35rem 0.55rem;
   font-size: 1rem;
@@ -572,4 +589,178 @@ body {
   text-align: center;
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+/* --- News reader ----------------------------------------------------------- */
+.news {
+  width: min(92vw, 46rem);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  /* Hide the scrollbar — the reading-progress bar takes its place. */
+  scrollbar-width: none;
+}
+.news::-webkit-scrollbar { width: 0; height: 0; }
+
+/* Reading-progress bar, pinned to the top of the reader. */
+.news-progress {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  flex: none;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.news-progress-fill {
+  height: 100%;
+  width: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.08s linear;
+}
+
+.news-article {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 1.6rem 1.5rem 2rem;
+}
+
+/* Previous / next day navigation under the article. */
+.news-nav {
+  display: flex;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+}
+.news-nav .nav-btn { flex: 1; }
+.news-nav .nav-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  border-color: var(--line);
+  color: var(--muted);
+}
+
+.news-title {
+  margin: 0 0 0.5rem;
+  font-size: calc(1.55rem * var(--font-scale));
+  line-height: 1.25;
+}
+
+.news-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.news-meta a { color: var(--accent); text-decoration: none; }
+
+.news-tip {
+  margin: 0.75rem 0 1.1rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.news-para {
+  margin: 0 0 1rem;
+  font-size: calc(1.1rem * var(--font-scale));
+  line-height: 1.75;
+}
+
+/* Clickable words sit inline and read like normal text until tapped. */
+.news-word {
+  display: inline;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  padding: 0 1px;
+  margin: 0 -1px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.news-word:hover,
+.news-word:focus-visible { background: var(--accent-soft); outline: none; }
+
+/* --- Word definition popover ----------------------------------------------- */
+.news-pop-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: transparent;
+}
+.news-pop {
+  position: fixed;
+  z-index: 41;
+  transform: translateX(-50%);
+  width: min(20rem, 90vw);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 0.9rem 1rem 1rem;
+}
+.news-pop-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.news-pop-word { font-size: 1.15rem; font-weight: 700; }
+.news-pop-pos {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.news-pop-close {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1rem;
+  cursor: pointer;
+}
+.news-pop-english { margin-top: 0.35rem; font-size: 1.05rem; }
+.news-pop-forms {
+  margin: 0.7rem 0 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.2rem 0.8rem;
+  font-size: 0.9rem;
+}
+.news-pop-forms div { display: contents; }
+.news-pop-forms dt { color: var(--muted); }
+.news-pop-forms dd { margin: 0; font-weight: 500; }
+.news-pop-example {
+  margin: 0.7rem 0 0;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+  font-style: italic;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+/* On phones the popover becomes a bottom sheet (overrides the inline coords). */
+@media (max-width: 768px) {
+  .news { width: 96vw; }
+  .news-pop {
+    left: 0 !important;
+    right: 0;
+    top: auto !important;
+    bottom: 0;
+    transform: none;
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
 }

@@ -1,0 +1,2 @@
+# Daily-news fetcher dependency. Everything else uses the Python stdlib.
+anthropic>=0.69

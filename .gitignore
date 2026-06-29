@@ -2,3 +2,10 @@ node_modules
 dist
 .DS_Store
 *.log
+
+# Scratch files from the daily-news fetch/build pipeline (job + words JSON).
+daily-news/.work/
+
+# Python
+__pycache__/
+*.pyc
