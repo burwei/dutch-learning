@@ -1,0 +1,237 @@
+Title: CBS: vorig jaar weer minder immigratie, vooral minder asiel- en kennismigranten
+Date: 2026-06-30
+Reporter: NOS Nieuws
+Source: https://nos.nl/l/2620940
+Category: 
+
+[ARTICLE]
+Vorig jaar kwamen er minder migranten naar Nederland dan in 2024. In totaal waren het er zo'n 8000 minder, blijkt uit cijfers van het CBS, het Centraal Bureau voor de Statistiek.
+
+Het is het derde jaar op rij dat de immigratie afnam. Tussen 2006 en 2022 steeg het aantal immigranten vrijwel elk jaar, met een piek in 2022 door de oorlog in Oekraïne.
+
+Volgens het CBS kwamen er vorig jaar voornamelijk minder asiel- en kennismigranten van buiten de EU naar Nederland. In 2025 kwamen bijna 35.000 asielmigranten naar Nederland, ruim 4000 minder dan een jaar eerder. In 2025 was ongeveer 11 procent van alle immigranten asielmigrant.
+
+In mei sprak premier Jetten nog over een asielcrisis: de opvanglocaties zaten nokvol. Dat komt doordat de uitstroom stokt, niet doordat er meer asielzoekers komen.
+
+Veel statushouders wachten op opvanglocaties tot zij een eigen plek toegewezen krijgen. Als ze een woning krijgen, kunnen ze plaats maken, maar door de woningnood en de aanhoudende discussie over voorrang voor statushouders is dat ingewikkeld.
+
+Via de spreidingswet zou de opvang eerlijker over het land worden verdeeld, zodat niet telkens nieuwe noodlocaties moeten worden geopend. De meeste gemeenten doen echter minder dan zij volgens de wet zouden moeten.
+
+Het aantal kennismigranten van buiten de EU is bijna gehalveerd sinds 2022: dat ging van 26.000 mensen in 2022 naar 14.000 mensen in 2025. Er kwamen vooral minder Indiase kennismigranten. Ook het aantal kennismigranten met een Turkse, Russische, Chinese en Zuid-Afrikaanse achtergrond daalde.
+
+In totaal immigreerden er 309.000 mensen naar Nederland in 2025. De helft kwam van buiten de EU en het Europees economisch gebied. Ongeveer 37 procent komt vanuit de EU en het economische gebied. 14 procent heeft de Nederlandse nationaliteit. Vaak zijn dat mensen die na een periode in het buitenland weer in Nederland komen wonen.
+
+[TRANSLATIONS]
+CBS: fewer immigrants again last year, especially fewer asylum and knowledge migrants
+Last year fewer migrants came to the Netherlands than in 2024.
+In total there were about 8,000 fewer, according to figures from CBS, the Central Bureau of Statistics.
+It is the third year in a row that immigration declined.
+Between 2006 and 2022 the number of immigrants rose almost every year, with a peak in 2022 because of the war in Ukraine.
+According to CBS, last year it was mainly fewer asylum and knowledge migrants from outside the EU who came to the Netherlands.
+In 2025 nearly 35,000 asylum migrants came to the Netherlands, well over 4,000 fewer than a year earlier.
+In 2025 about 11 percent of all immigrants were asylum migrants.
+In May Prime Minister Jetten still spoke of an asylum crisis: the reception locations were packed full.
+That is because the outflow is stalling, not because more asylum seekers are coming.
+Many status holders wait at reception locations until they are allocated a place of their own.
+If they get a home, they can make room, but because of the housing shortage and the ongoing debate about priority for status holders, that is complicated.
+Through the distribution law, reception would be spread more fairly across the country, so that new emergency locations would not have to be opened time and again.
+Most municipalities, however, do less than they should under the law.
+The number of knowledge migrants from outside the EU has almost halved since 2022: it went from 26,000 people in 2022 to 14,000 people in 2025.
+There were especially fewer Indian knowledge migrants.
+The number of knowledge migrants with a Turkish, Russian, Chinese and South African background also fell.
+In total, 309,000 people immigrated to the Netherlands in 2025.
+Half came from outside the EU and the European Economic Area.
+About 37 percent come from the EU and the economic area. 14 percent have Dutch nationality.
+Often these are people who come to live in the Netherlands again after a period abroad.
+
+[WORDDATA]
+```json
+{
+  "index": {
+    "aanhoudend": "aanhoudend",
+    "aanhoudende": "aanhoudend",
+    "aantal": "aantal",
+    "achtergrond": "achtergrond",
+    "afnam": "afnemen",
+    "afnemen": "afnemen",
+    "alle": "alle",
+    "als": "als",
+    "asiel": "asiel",
+    "asielcrisis": "asielcrisis",
+    "asielmigrant": "asielmigrant",
+    "asielmigranten": "asielmigrant",
+    "asielzoeker": "asielzoeker",
+    "asielzoekers": "asielzoeker",
+    "bijna": "bijna",
+    "blijken": "blijken",
+    "blijkt": "blijken",
+    "buiten": "buiten",
+    "buitenland": "buitenland",
+    "bureau": "bureau",
+    "cbs": "cbs",
+    "centraal": "centraal",
+    "chinees": "chinees",
+    "chinese": "chinees",
+    "cijfer": "cijfer",
+    "cijfers": "cijfer",
+    "daalde": "dalen",
+    "dalen": "dalen",
+    "dan": "dan",
+    "dat": "dat",
+    "de": "de",
+    "derde": "derde",
+    "die": "die",
+    "discussie": "discussie",
+    "doen": "doen",
+    "door": "door",
+    "doordat": "doordat",
+    "echter": "echter",
+    "economisch": "economisch",
+    "economische": "economisch",
+    "een": "een",
+    "eerder": "eerder",
+    "eerlijk": "eerlijk",
+    "eerlijker": "eerlijk",
+    "eigen": "eigen",
+    "elk": "elk",
+    "en": "en",
+    "er": "er",
+    "eu": "eu",
+    "europees": "europees",
+    "gaan": "gaan",
+    "gebied": "gebied",
+    "gehalveerd": "halveren",
+    "gemeente": "gemeente",
+    "gemeenten": "gemeente",
+    "geopend": "openen",
+    "ging": "gaan",
+    "halveren": "halveren",
+    "hebben": "hebben",
+    "heeft": "hebben",
+    "helft": "helft",
+    "het": "het",
+    "immigrant": "immigrant",
+    "immigranten": "immigrant",
+    "immigratie": "immigratie",
+    "immigreerden": "immigreren",
+    "immigreren": "immigreren",
+    "in": "in",
+    "indiaas": "indiaas",
+    "indiase": "indiaas",
+    "ingewikkeld": "ingewikkeld",
+    "is": "zijn",
+    "jaar": "jaar",
+    "jetten": "jetten",
+    "kennismigrant": "kennismigrant",
+    "kennismigranten": "kennismigrant",
+    "komen": "komen",
+    "komt": "komen",
+    "krijgen": "krijgen",
+    "kunnen": "kunnen",
+    "kwam": "komen",
+    "kwamen": "komen",
+    "land": "land",
+    "maar": "maar",
+    "maken": "maken",
+    "meer": "meer",
+    "meeste": "meeste",
+    "mei": "mei",
+    "mens": "mens",
+    "mensen": "mens",
+    "met": "met",
+    "migrant": "migrant",
+    "migranten": "migrant",
+    "minder": "minder",
+    "moeten": "moeten",
+    "na": "na",
+    "naar": "naar",
+    "nationaliteit": "nationaliteit",
+    "nederland": "nederland",
+    "nederlands": "nederlands",
+    "nederlandse": "nederlands",
+    "niet": "niet",
+    "nieuw": "nieuw",
+    "nieuwe": "nieuw",
+    "nog": "nog",
+    "nokvol": "nokvol",
+    "noodlocatie": "noodlocatie",
+    "noodlocaties": "noodlocatie",
+    "oekraïne": "oekraïne",
+    "ongeveer": "ongeveer",
+    "ook": "ook",
+    "oorlog": "oorlog",
+    "op": "op",
+    "openen": "openen",
+    "opvang": "opvang",
+    "opvanglocatie": "opvanglocatie",
+    "opvanglocaties": "opvanglocatie",
+    "over": "over",
+    "periode": "periode",
+    "piek": "piek",
+    "plaats": "plaats",
+    "plek": "plek",
+    "premier": "premier",
+    "procent": "procent",
+    "rij": "rij",
+    "ruim": "ruim",
+    "russisch": "russisch",
+    "russische": "russisch",
+    "sinds": "sinds",
+    "sprak": "spreken",
+    "spreidingswet": "spreidingswet",
+    "spreken": "spreken",
+    "statistiek": "statistiek",
+    "statushouder": "statushouder",
+    "statushouders": "statushouder",
+    "steeg": "stijgen",
+    "stijgen": "stijgen",
+    "stokken": "stokken",
+    "stokt": "stokken",
+    "telkens": "telkens",
+    "toegewezen": "toewijzen",
+    "toewijzen": "toewijzen",
+    "tot": "tot",
+    "totaal": "totaal",
+    "turks": "turks",
+    "turkse": "turks",
+    "tussen": "tussen",
+    "uit": "uit",
+    "uitstroom": "uitstroom",
+    "vaak": "vaak",
+    "van": "van",
+    "vanuit": "vanuit",
+    "veel": "veel",
+    "verdeeld": "verdelen",
+    "verdelen": "verdelen",
+    "via": "via",
+    "volgens": "volgens",
+    "voor": "voor",
+    "vooral": "vooral",
+    "voornamelijk": "voornamelijk",
+    "voorrang": "voorrang",
+    "vorig": "vorig",
+    "vrijwel": "vrijwel",
+    "wachten": "wachten",
+    "waren": "zijn",
+    "was": "zijn",
+    "weer": "weer",
+    "wet": "wet",
+    "wonen": "wonen",
+    "woning": "woning",
+    "woningnood": "woningnood",
+    "worden": "worden",
+    "zaten": "zitten",
+    "ze": "ze",
+    "zij": "zij",
+    "zijn": "zijn",
+    "zitten": "zitten",
+    "zo'n": "zo'n",
+    "zodat": "zodat",
+    "zou": "zullen",
+    "zouden": "zullen",
+    "zuid-afrikaans": "zuid-afrikaans",
+    "zuid-afrikaanse": "zuid-afrikaans",
+    "zullen": "zullen"
+  }
+}
+```
