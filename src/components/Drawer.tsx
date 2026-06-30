@@ -37,6 +37,8 @@ interface Props {
   onToggleTheme: () => void
   onFont: (delta: number) => void
   onReset: () => void
+  onExport: () => void
+  onImport: () => void
 }
 
 // A label with a row of pill buttons acting as a toggle.
@@ -192,6 +194,18 @@ export function Drawer(props: Props) {
               aria-label="Larger font"
             >
               A+
+            </button>
+          </div>
+        </div>
+
+        <div className="toggle">
+          <span className="toggle-label">Progress</span>
+          <div className="progress-actions">
+            <button className="progress-btn" onClick={props.onExport}>
+              Export
+            </button>
+            <button className="progress-btn" onClick={props.onImport}>
+              Import
             </button>
           </div>
         </div>

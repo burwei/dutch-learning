@@ -7,6 +7,9 @@ interface Props {
   docs: NewsDoc[]
   date: string
   onSelectDate: (date: string) => void
+  // Called once the reader scrolls to the end of an article (or it's short
+  // enough to fit without scrolling). Fires at most once per article per mount.
+  onComplete?: (date: string) => void
 }
 
 interface Selection {
@@ -214,28 +217,45 @@ function TranslateDetail({
   )
 }
 
-export function NewsView({ docs, date, onSelectDate }: Props) {
+export function NewsView({ docs, date, onSelectDate, onComplete }: Props) {
   const [sel, setSel] = useState<Selection | null>(null)
   const [trans, setTrans] = useState<Translation | null>(null)
   const [progress, setProgress] = useState(0)
   const scrollRef = useRef<HTMLDivElement>(null)
+  // The article we last reported as finished, so onComplete fires only once.
+  const completedRef = useRef<string | null>(null)
   const doc = useMemo(
     () => docs.find((d) => d.date === date) ?? docs[0],
     [docs, date],
   )
+
+  // Treat 99%+ scrolled as "read to the end" — exact 100% is fiddly on mobile.
+  const reportIfDone = (ratio: number) => {
+    if (ratio < 0.99 || !doc) return
+    if (completedRef.current === doc.date) return
+    completedRef.current = doc.date
+    onComplete?.(doc.date)
+  }
 
   // Replaces the scrollbar: a reading-progress bar pinned to the top.
   const onScroll = () => {
     const el = scrollRef.current
     if (!el) return
     const max = el.scrollHeight - el.clientHeight
-    setProgress(max > 0 ? el.scrollTop / max : 0)
+    const ratio = max > 0 ? el.scrollTop / max : 1
+    setProgress(max > 0 ? ratio : 0)
+    reportIfDone(ratio)
   }
 
-  // Reset to the top when switching to a different day.
+  // Reset to the top when switching to a different day. A short article that
+  // fits without scrolling counts as read as soon as it's shown.
   useEffect(() => {
+    completedRef.current = null
     scrollRef.current?.scrollTo({ top: 0 })
     setProgress(0)
+    const el = scrollRef.current
+    if (el && el.scrollHeight - el.clientHeight <= 4) reportIfDone(1)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doc?.date])
 
   const clearSelection = () => window.getSelection()?.removeAllRanges()

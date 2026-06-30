@@ -17,19 +17,22 @@
 }
 
 [data-theme='dark'] {
-  --bg: #14171e;
-  --card: #1e2330;
-  --card-alt: #232a3a;
-  --ink: #e7ebf2;
-  --muted: #8b95a7;
-  --line: #2c3342;
+  /* Neutral dark grays (no blue tint) — the most eye-comfortable dark mode.
+     Not pure black: a near-black gray avoids the harsh halation of #000 on OLED
+     while keeping plenty of contrast for text. */
+  --bg: #121212;
+  --card: #1e1e1e;
+  --card-alt: #262626;
+  --ink: #e6e6e6;
+  --muted: #9a9a9a;
+  --line: #333333;
   --accent: #f2761c;
   --ok: #35c07a;
   --bad: #f06a62;
   --ok-soft: rgba(53, 192, 122, 0.16);
   --bad-soft: rgba(240, 106, 98, 0.16);
   --accent-soft: rgba(242, 118, 28, 0.2);
-  --shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
 }
 
 body { transition: background-color 0.2s ease, color 0.2s ease; }
@@ -252,6 +255,46 @@ body {
   border-radius: 8px;
   font-size: 0.85rem;
   cursor: pointer;
+}
+
+/* Export / import buttons (in drawer). */
+.progress-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+.progress-btn {
+  flex: 1;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.progress-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* --- Toast ---------------------------------------------------------------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 50;
+  max-width: min(28rem, 92vw);
+  background: var(--ink);
+  color: var(--bg);
+  padding: 0.7rem 1rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  text-align: center;
+  animation: toast-in 0.2s ease;
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 0.5rem); }
+  to { opacity: 1; transform: translate(-50%, 0); }
 }
 
 /* --- Main / counter -------------------------------------------------------- */

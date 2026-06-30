@@ -5,6 +5,11 @@ const THEME_KEY = 'dutch-flashcards.theme'
 const FONT_KEY = 'dutch-flashcards.fontScale'
 const POS_KEY = 'dutch-flashcards.position'
 const LEVELS_KEY = 'dutch-flashcards.levels'
+const COMPLETED_NEWS_KEY = 'dutch-flashcards.completedNews'
+
+// The synthetic "News" level: not a real CSV you study wholesale, but the set of
+// words drawn from the daily-news articles this reader has finished. See loadVocab.
+export const NEWS_LEVEL = 'news'
 
 // Font scale (multiplier on card text), clamped to a sensible range.
 export const FONT_MIN = 0.7
@@ -119,4 +124,79 @@ export function saveLevels(levels: Level[]): void {
   } catch {
     // ignore
   }
+}
+
+// Dates (YYYY-MM-DD) of daily-news articles the reader has finished (scrolled to
+// the end). These drive the dynamic "News" vocab level: only words from articles
+// you've actually read show up there.
+export function loadCompletedNews(): string[] {
+  try {
+    const raw = localStorage.getItem(COMPLETED_NEWS_KEY)
+    const arr = raw ? (JSON.parse(raw) as string[]) : null
+    if (Array.isArray(arr)) return arr.filter((d) => typeof d === 'string')
+  } catch {
+    // ignore
+  }
+  return []
+}
+
+export function saveCompletedNews(dates: string[]): void {
+  try {
+    localStorage.setItem(COMPLETED_NEWS_KEY, JSON.stringify(dates))
+  } catch {
+    // ignore
+  }
+}
+
+// --- Export / import -------------------------------------------------------
+//
+// A single portable snapshot of everything that represents a user's progress:
+// their known/unknown marks, the news articles they've finished, and the levels
+// they study. Theme/font/position are device preferences, not progress, so we
+// leave them out. Serialised as compact JSON (a plain text file).
+
+export interface ProgressBundle {
+  v: 1
+  progress: Progress
+  completedNews: string[]
+  levels: Level[]
+}
+
+export function exportProgress(): string {
+  const bundle: ProgressBundle = {
+    v: 1,
+    progress: loadProgress(),
+    completedNews: loadCompletedNews(),
+    levels: loadLevels(),
+  }
+  return JSON.stringify(bundle)
+}
+
+// Parse + validate a snapshot and write it over the current progress. Throws on
+// anything that isn't a recognisable bundle so the caller can warn the user.
+export function importProgress(text: string): ProgressBundle {
+  let data: unknown
+  try {
+    data = JSON.parse(text)
+  } catch {
+    throw new Error('This file is not valid progress data.')
+  }
+  if (!data || typeof data !== 'object') {
+    throw new Error('This file is not valid progress data.')
+  }
+  const d = data as Record<string, unknown>
+  const progress =
+    d.progress && typeof d.progress === 'object' ? (d.progress as Progress) : {}
+  const completedNews = Array.isArray(d.completedNews)
+    ? (d.completedNews as unknown[]).filter((x): x is string => typeof x === 'string')
+    : []
+  const levels =
+    Array.isArray(d.levels) && d.levels.length
+      ? (d.levels as unknown[]).filter((x): x is string => typeof x === 'string')
+      : ['a0-a2_core']
+
+  saveProgress(progress)
+  saveCompletedNews(completedNews)
+  saveLevels(levels)
+  return { v: 1, progress, completedNews, levels }
 }

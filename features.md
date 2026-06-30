@@ -101,7 +101,8 @@ A panel that slides in **from the left** over a dimmed backdrop. Closes by:
 tapping the backdrop, tapping its `✕`, or pressing **Escape**. Contents, top to
 bottom:
 
-1. **View** toggle — `Vocab` / `News` (switches the tab).
+1. **View** toggle — `Vocab` / `News` (switches the tab). **News is the default
+   landing tab** when the app opens at its root (no/unknown route).
 2. *(Vocab only — hidden in News)*:
    - **Vocab** — word type: `Verbs` / `Nouns` / `Adjectives` / `Adverbs`.
      Switching type resets the Topic to that type's first topic.
@@ -116,8 +117,9 @@ bottom:
 4. **Font size** — a stepper: `A−` / current percentage / `A+`. Scales the card
    and article text from **70 % to 180 %** in **10 %** steps. Buttons disable at
    the limits.
-5. **Reset progress** — opens the reset confirmation dialog (§3.5).
-6. **Footer** — a link to the GitHub repo and the app **version** (`vX.Y.Z`).
+5. **Progress** — two buttons, `Export` / `Import` (§3.6).
+6. **Reset progress** — opens the reset confirmation dialog (§3.5).
+7. **Footer** — a link to the GitHub repo and the app **version** (`vX.Y.Z`).
 
 All toggles are rendered as a labeled row of "pill" buttons; the active option is
 highlighted in the accent color. Selections apply **immediately** (no Save
@@ -127,6 +129,8 @@ button) and persist (see §9).
 
 - Light and dark themes, switchable any time, **persisted**.
 - On first visit (no saved choice), follow the OS `prefers-color-scheme`.
+- Dark mode uses **neutral dark grays** (near-black `#121212` background, no blue
+  tint) for low-strain reading — not pure black, not a colored slate.
 - Accent color is **Dutch orange** (`#e0590b` light / `#f2761c` dark) — used for
   active pills, primary buttons, links, the news reading-progress bar, and tap
   highlights on news words.
@@ -145,6 +149,21 @@ Cancel). Text warns that it **permanently clears every known/unknown mark across
 all word types and topics, plus the current session score, and cannot be undone**.
 Two buttons: `Cancel` and a red `Reset progress`. Only this dialog ever clears
 progress — no other path does.
+
+### 3.6 Export / import progress
+
+Because progress (and especially the per-reader **News** level, §5.7) is purely
+local, the learner can move it between devices:
+
+- **Export** downloads the current progress as a single compact JSON text file
+  (`dutch-learning-progress-YYYY-MM-DD.json`). It contains the known/unknown
+  marks, the list of finished news articles, and the selected levels — but **not**
+  device preferences (theme, font, scroll/resume position).
+- **Import** opens a file picker. After a file is chosen, a **confirmation dialog**
+  warns that importing **overwrites all current progress** (marks, finished-news
+  list, and levels) with the file's contents and **cannot be undone**, naming the
+  chosen file. Only on confirming `Overwrite & import` is anything written.
+  Invalid/garbled files are rejected with a toast and leave progress untouched.
 
 ---
 
@@ -419,10 +438,26 @@ sentence lines up with its stored translation:
 
 ### 5.7 Words from the news feed back into Vocab
 
-Words discovered in the daily article are appended to the vocab lists as a
-special **"News" level** (see §6 and §7), so the learner can later drill the
-vocabulary they actually encountered in real articles. Function words and proper
-names go to a dictionary-only store (not a studyable level).
+The vocab lists carry a special **"News" level** so the learner can drill the
+vocabulary they actually encountered in real articles. Crucially this level is
+**dynamic and per-reader**, not a fixed file:
+
+- An article counts as **finished** when its reading-progress reaches the end
+  (≥99 % scrolled; a short article that fits without scrolling counts the moment
+  it's shown). The set of finished article dates is persisted locally (§9).
+- The first time a given day is finished, a **toast** confirms: *"Article finished
+  — its words were added to the 'News' vocab level."*
+- The **News** level (selectable like any other level, per word type) then
+  contains the **new** words from the articles **this reader has finished** — the
+  union of those articles' words, **excluding any word already taught by a core
+  CEFR level** (A0-A2/B1/B2/C1/C2). In practice these are exactly the words the
+  pipeline added to `vocab/<type>/news.csv`. A reader who has finished nothing
+  sees an empty News level.
+
+The pipeline still maintains `vocab/<type>/news.csv` as the **catalog** of word
+data behind news words (§6, §7); the News *level* is just the per-reader subset of
+it. Function words and proper names go to a dictionary-only store (not a studyable
+level).
 
 ---
 
@@ -567,8 +602,8 @@ cents/day.
   on news words.
 - **Light theme:** near-white background, white cards, dark ink text, soft gray
   lines, green/red for correct/incorrect.
-- **Dark theme:** deep slate background and cards, light ink, the same accent
-  family lightened.
+- **Dark theme:** neutral dark-gray background (`#121212`) and slightly lighter
+  gray cards (no blue tint), light ink, the same accent family lightened.
 - **Surfaces:** cards have generous rounding (~18 px), a soft drop shadow, and a
   1px hairline border.
 - **Controls:** toggles are pill rows; the active pill is filled with the accent.
@@ -597,7 +632,12 @@ equivalent in a native app). Keys and meaning:
 | **Font scale** | number `0.7`–`1.8` | Default `1.0`. |
 | **Card position** | `{ signature, headword }` | Resume point; `signature` = `mode:type:topic:filter`. Restored only when the signature matches. |
 | **Selected levels** | array of level ids | Default `["a0-a2_core"]`. |
-| **Route** | URL hash | `#/vocab` or `#/news/YYYY-MM-DD`. |
+| **Finished news** | array of `YYYY-MM-DD` | Articles read to the end; builds the dynamic News level (§5.7). |
+| **Route** | URL hash | `#/news/YYYY-MM-DD` (default landing) or `#/vocab`. |
+
+The **export/import** bundle (§3.6) is a versioned JSON snapshot of exactly three
+of these — **Progress**, **Finished news**, and **Selected levels**; import
+overwrites all three. Theme, font, and position are device-local and excluded.
 
 Session-only (not persisted): the typing **score** (correct/attempted) and which
 deck/card is currently in view (beyond the saved resume point).
@@ -614,10 +654,14 @@ A rebuild is faithful if all of these hold:
 **Shell**
 - [ ] Two tabs (Vocab/News) switchable from a left drawer; Escape/backdrop close
       the drawer.
+- [ ] **News is the default landing tab** at the root; it opens the newest article.
 - [ ] Tab + open article are in the URL and survive reload / are shareable.
-- [ ] Light/dark theme persists and defaults to OS preference; orange accent.
+- [ ] Light/dark theme persists and defaults to OS preference; orange accent;
+      dark mode is neutral dark gray (`#121212`), not blue/black.
 - [ ] Font-size stepper scales card & article text 70–180 %, persisted.
 - [ ] Reset asks for confirmation and clears all marks + score.
+- [ ] Export downloads a JSON progress snapshot; Import warns before overwriting
+      and only applies on confirm; bad files are rejected without data loss.
 
 **Vocab**
 - [ ] Multi-select levels (dynamic from data); default A0–A2 Core.
@@ -642,11 +686,14 @@ A rebuild is faithful if all of these hold:
       not pop a definition.
 - [ ] Title words are tappable; only indexed words are interactive.
 - [ ] Punctuation stays glued to its word at line wraps; text renders verbatim.
+- [ ] Finishing an article toasts the reader and adds its words to a per-reader
+      **News** vocab level (empty until something is finished); persisted.
 
 **Data**
 - [ ] Vocab CSVs per §6.1; daily files per §6.4 (slim: article + English-only
       translations + surface→lemma index).
 - [ ] Definitions come from the merged dictionary; translations align to
       sentences by index.
-- [ ] New news words feed back as a "News" level; pipeline guarantees title-word
+- [ ] New news words are cataloged in `vocab/<type>/news.csv` and surface in the
+      dynamic per-reader "News" level (§5.7); pipeline guarantees title-word
       coverage.

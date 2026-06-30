@@ -1,5 +1,6 @@
 import Papa from 'papaparse'
 import type { Entry, VocabType, Level, Topic, WordEntry } from '../types'
+import { NEWS_LEVEL } from './storage'
 
 // --- Config: one block per vocab type ---------------------------------------
 //
@@ -246,14 +247,64 @@ export const newsDictionary: Record<string, WordEntry> = (() => {
 })()
 
 // All entries for a vocab type, restricted to the chosen levels and merged
-// across every matching CSV in the type's folder.
-export function loadVocab(type: VocabType, levels: Level[]): Entry[] {
+// across every matching CSV in the type's folder. Deduplicated by headword so a
+// word that lives in two selected levels shows once.
+//
+// The "News" level is special: it isn't the whole vocab/<type>/news.csv file but
+// only the words that appear in the daily-news articles the reader has finished
+// (passed in as `newsLemmas`, lowercased lemmas). It also only contains words
+// that are *new* — i.e. not already taught by a core CEFR level — so the reader
+// practises the genuinely unfamiliar vocabulary an article introduced, not words
+// they'd drill anyway. Such words live in vocab/<type>/news.csv, so we draw the
+// News level from there and additionally exclude any lemma present in a core list.
+export function loadVocab(
+  type: VocabType,
+  levels: Level[],
+  newsLemmas?: Set<string>,
+): Entry[] {
+  const headword = VOCAB[type].headword
   const entries: Entry[] = []
+  const seen = new Set<string>()
+  const push = (e: Entry) => {
+    const h = headword(e)?.trim()
+    if (!h) return
+    const k = h.toLowerCase()
+    if (seen.has(k)) return
+    seen.add(k)
+    entries.push(e)
+  }
+
+  // Real CSV levels selected (everything except the synthetic News level).
   for (const [path, text] of Object.entries(csvFiles)) {
     if (!path.includes(`/vocab/${type}/`)) continue
-    if (!levels.includes(levelIdFromPath(path))) continue
-    entries.push(...parse(text))
+    const id = levelIdFromPath(path)
+    if (id === NEWS_LEVEL) continue // handled dynamically below
+    if (!levels.includes(id)) continue
+    for (const e of parse(text)) push(e)
   }
-  // Drop rows without a headword.
-  return entries.filter((e) => VOCAB[type].headword(e)?.trim())
+
+  // Dynamic News level: new words (only) from articles the reader has finished.
+  if (levels.includes(NEWS_LEVEL) && newsLemmas && newsLemmas.size) {
+    // Lemmas already covered by a core CEFR level — excluded from News.
+    const coreLemmas = new Set<string>()
+    for (const [path, text] of Object.entries(csvFiles)) {
+      if (!path.includes(`/vocab/${type}/`)) continue
+      if (levelIdFromPath(path) === NEWS_LEVEL) continue
+      for (const e of parse(text)) {
+        const h = headword(e)?.trim()
+        if (h) coreLemmas.add(h.toLowerCase())
+      }
+    }
+    for (const [path, text] of Object.entries(csvFiles)) {
+      if (!path.includes(`/vocab/${type}/`)) continue
+      if (levelIdFromPath(path) !== NEWS_LEVEL) continue // news.csv only
+      for (const e of parse(text)) {
+        const h = headword(e)?.trim()
+        const k = h?.toLowerCase()
+        if (k && newsLemmas.has(k) && !coreLemmas.has(k)) push(e)
+      }
+    }
+  }
+
+  return entries
 }

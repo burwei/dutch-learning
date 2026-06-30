@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type {
   Entry,
   VocabType,
@@ -12,7 +12,7 @@ import type {
   TopView,
 } from './types'
 import { VOCAB, loadVocab } from './lib/vocab'
-import { listNews } from './lib/news'
+import { listNews, newsLemmas } from './lib/news'
 import { relevantEntries, shuffle } from './lib/deck'
 import {
   loadProgress,
@@ -27,6 +27,10 @@ import {
   savePosition,
   loadLevels,
   saveLevels,
+  loadCompletedNews,
+  saveCompletedNews,
+  exportProgress,
+  importProgress,
   FONT_MIN,
   FONT_MAX,
   FONT_STEP,
@@ -49,10 +53,12 @@ export default function App() {
   const newsDates = useMemo(() => news.map((n) => n.date), [news])
   const parseHash = (): { view: TopView; date: string } => {
     const [section, d] = window.location.hash.replace(/^#\/?/, '').split('/')
-    if (section === 'news') {
-      return { view: 'news', date: newsDates.includes(d) ? d : newsDates[0] ?? '' }
+    if (section === 'vocab') {
+      return { view: 'vocab', date: newsDates[0] ?? '' }
     }
-    return { view: 'vocab', date: newsDates[0] ?? '' }
+    // Daily news is the default landing tab; an unknown/empty date falls back to
+    // the latest article (newsDates is newest-first).
+    return { view: 'news', date: newsDates.includes(d) ? d : newsDates[0] ?? '' }
   }
   const [view, setView] = useState<TopView>(() => parseHash().view)
   const [newsDate, setNewsDate] = useState<string>(() => parseHash().date)
@@ -86,6 +92,29 @@ export default function App() {
   // Progress + session score.
   const [progress, setProgress] = useState<Progress>(loadProgress)
   const [score, setScore] = useState({ correct: 0, attempted: 0 })
+
+  // Dates of daily-news articles the reader has finished. These drive the
+  // dynamic "News" vocab level — only words from articles you've read appear.
+  const [completedNews, setCompletedNews] = useState<string[]>(loadCompletedNews)
+  const newsWords = useMemo(
+    () => newsLemmas(news, completedNews),
+    [news, completedNews],
+  )
+
+  // Transient toast (e.g. "words added to the News level").
+  const [toast, setToast] = useState<string | null>(null)
+  useEffect(() => {
+    if (!toast) return
+    const t = window.setTimeout(() => setToast(null), 4000)
+    return () => window.clearTimeout(t)
+  }, [toast])
+
+  // Import flow: a parsed snapshot awaiting the user's confirmation to overwrite.
+  const [pendingImport, setPendingImport] = useState<{
+    text: string
+    name: string
+  } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Light/dark theme, applied to <html> and persisted.
   const [theme, setTheme] = useState<Theme>(loadTheme)
@@ -130,7 +159,7 @@ export default function App() {
   // filter again to refresh the "only unknown" set. On (re)build we resume the
   // last viewed card for this context if we can still find it.
   useEffect(() => {
-    let pool = relevantEntries(loadVocab(vocabType, levels), topic)
+    let pool = relevantEntries(loadVocab(vocabType, levels, newsWords), topic)
     if (filter === 'unknown') {
       pool = pool.filter((e) => progress[`${key}:${config.headword(e)}`] !== 'known')
     }
@@ -144,7 +173,7 @@ export default function App() {
     setOrder(pool)
     setIndex(start)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vocabType, topicId, filter, sortMode, mode, levels])
+  }, [vocabType, topicId, filter, sortMode, mode, levels, newsWords])
 
   const current = order[index]
 
@@ -173,6 +202,61 @@ export default function App() {
     setProgress({})
     setScore({ correct: 0, attempted: 0 })
     setConfirmReset(false)
+  }
+
+  // Fired when an article is scrolled to the end. The first time a given day is
+  // finished we add it to the completed set (which folds its words into the News
+  // level) and toast the reader so they know where to practise them.
+  const onNewsComplete = (date: string) => {
+    if (completedNews.includes(date)) return
+    const next = [...completedNews, date]
+    setCompletedNews(next)
+    saveCompletedNews(next)
+    setToast('Article finished — its words were added to the “News” vocab level.')
+  }
+
+  // Download the current progress as a compact JSON file.
+  const onExport = () => {
+    const blob = new Blob([exportProgress()], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    const stamp = new Date().toISOString().slice(0, 10)
+    a.href = url
+    a.download = `dutch-learning-progress-${stamp}.json`
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    URL.revokeObjectURL(url)
+    setMenuOpen(false)
+  }
+
+  // Pick a file -> read it -> stage it for the confirm dialog (we don't touch
+  // existing progress until the user confirms the overwrite).
+  const onImportFile = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      setMenuOpen(false)
+      setPendingImport({ text: String(reader.result ?? ''), name: file.name })
+    }
+    reader.onerror = () => setToast('Could not read that file.')
+    reader.readAsText(file)
+  }
+
+  // Apply a staged import, overwriting all current progress.
+  const applyImport = () => {
+    if (!pendingImport) return
+    try {
+      const bundle = importProgress(pendingImport.text)
+      setProgress(bundle.progress)
+      setCompletedNews(bundle.completedNews)
+      setLevels(bundle.levels)
+      setScore({ correct: 0, attempted: 0 })
+      setPendingImport(null)
+      setToast('Progress imported.')
+    } catch (err) {
+      setPendingImport(null)
+      setToast(err instanceof Error ? err.message : 'Import failed.')
+    }
   }
 
   const recordResult = (e: Entry, correct: boolean) => {
@@ -252,11 +336,31 @@ export default function App() {
           setMenuOpen(false)
           setConfirmReset(true)
         }}
+        onExport={onExport}
+        onImport={() => fileInputRef.current?.click()}
+      />
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="application/json,.json,.txt"
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          if (file) onImportFile(file)
+          // Reset so picking the same file again still fires onChange.
+          e.target.value = ''
+        }}
       />
 
       <main className="main">
         {view === 'news' ? (
-          <NewsView docs={news} date={newsDate} onSelectDate={setNewsDate} />
+          <NewsView
+            docs={news}
+            date={newsDate}
+            onSelectDate={setNewsDate}
+            onComplete={onNewsComplete}
+          />
         ) : (
          <>
         {order.length === 0 && (
@@ -335,6 +439,40 @@ export default function App() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {pendingImport && (
+        <div className="modal-backdrop" onClick={() => setPendingImport(null)}>
+          <div
+            className="modal"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="modal-title">Import progress?</h2>
+            <p className="modal-text">
+              This replaces <strong>all</strong> your current progress — every
+              known/unknown mark, your finished-news list, and your selected
+              levels — with the contents of{' '}
+              <strong>{pendingImport.name}</strong>. Your current progress will be
+              permanently lost. This cannot be undone.
+            </p>
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setPendingImport(null)}>
+                Cancel
+              </button>
+              <button className="btn-danger" onClick={applyImport}>
+                Overwrite &amp; import
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className="toast" role="status" aria-live="polite">
+          {toast}
         </div>
       )}
     </div>

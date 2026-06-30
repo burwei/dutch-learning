@@ -133,6 +133,22 @@ export function listNews(): NewsDoc[] {
     .sort((a, b) => b.date.localeCompare(a.date))
 }
 
+// The set of lemmas (lowercased) taught by a set of finished articles — the
+// union of every word in each completed article's index. This is what the
+// dynamic "News" vocab level is built from.
+export function newsLemmas(docs: NewsDoc[], completedDates: string[]): Set<string> {
+  const done = new Set(completedDates)
+  const out = new Set<string>()
+  for (const doc of docs) {
+    if (!done.has(doc.date)) continue
+    for (const lemma of Object.values(doc.index)) {
+      const k = lemma.trim().toLowerCase()
+      if (k) out.add(k)
+    }
+  }
+  return out
+}
+
 // Look up the entry for a single token (the raw word as it appears in the text):
 // normalise -> lemma (via the file's index) -> definition (via the shared dict).
 export function lookup(
