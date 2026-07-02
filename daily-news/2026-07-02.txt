@@ -1,0 +1,260 @@
+Title: Steeds meer Amerikaanse goede doelen vluchten naar Nederland om Trump
+Date: 2026-07-02
+Reporter: NOS Nieuws
+Source: https://nos.nl/artikel/2621300-steeds-meer-amerikaanse-goede-doelen-vluchten-naar-nederland-om-trump
+Category: Economie
+
+[ARTICLE]
+Amerikaanse goede doelen voelen zich steeds minder thuis in eigen land en overwegen vaker om naar Nederland te verhuizen. Accountantskantoor PwC ziet vooral organisaties die zich focussen op klimaat en gendergelijkheid vluchten uit de VS en neerstrijken in Nederland.
+
+"Exacte aantallen zijn nog moeilijk te geven maar inmiddels hebben tientallen goede doelen zich in Nederland gevestigd", zegt Maiko van Bakel, belastingadviseur bij PwC en onderzoeker bij Tilburg University. Van Bakel staat namens PwC internationale organisaties bij die erover denken zich in Nederland te vestigen.
+
+Uit een rondgang van De Telegraaf blijkt dat fiscalisten de afgelopen tijd veel meer vragen krijgen van Amerikaanse filantropische instellingen. De situatie in eigen land wordt voor veel organisaties moeilijker. Zo heeft de Amerikaanse regering het een stuk minder aantrekkelijk gemaakt om geld te doneren aan goede doelen en zijn veel subsidies stopgezet.
+
+Bovendien krijgen de goede doelen steeds vaker te maken met rechtszaken in de Verenigde Staten. Van Bakel ziet de druk op deze organisaties groter worden. "Ze worden in sommige media weggezet als terroristische organisaties en dat geeft grote reputatieschade."
+
+Nederland is volgens Van Bakel een fijn land om neer te strijken voor filantropische organisaties. De regeldruk hier is voor goede doelen relatief laag. "Maar dat is niet de belangrijkste reden. Nederland heeft een rijk filantropisch ecosysteem wat heel handig is. Ook zijn Nederlanders bijzonder vrijgevig als het gaat om goede doelen." Dat 'ecosysteem' betekent dat er in Nederland relatief veel goede doelen gevestigd zijn, die daardoor makkelijker samen kunnen optrekken en ervaringen kunnen delen.
+
+Voor Nederland zijn er ook wel wat voordelen dat deze organisaties hier neerstrijken. Volgens Van Bakel creëert het werkgelegenheid. "Maar vooral de expertise van deze organisaties is ook echt een verrijking voor het Nederlandse filantropische ecosysteem."
+
+Of alle goede doelen ook daadwerkelijk in Nederland zullen blijven, is nog onduidelijk. "Maar bij een verhuizing komt veel kijken. Dat doe je niet over een nacht ijs en dus verwacht ik ook niet dat deze organisaties heel snel weer terug zullen gaan", voorziet Van Bakel.
+
+[TRANSLATIONS]
+More and more American charities are fleeing to the Netherlands because of Trump
+American charities feel less and less at home in their own country and are increasingly considering moving to the Netherlands.
+Accounting firm PwC sees mainly organizations focused on climate and gender equality fleeing the US and settling in the Netherlands.
+"Exact numbers are still hard to give, but by now dozens of charities have established themselves in the Netherlands," says Maiko van Bakel, tax adviser at PwC and researcher at Tilburg University.
+On behalf of PwC, Van Bakel assists international organizations that are considering establishing themselves in the Netherlands.
+A survey by De Telegraaf shows that tax specialists have been getting far more questions lately from American philanthropic institutions.
+The situation in their own country is becoming more difficult for many organizations.
+For instance, the American government has made it a lot less attractive to donate money to charities, and many subsidies have been stopped.
+Moreover, the charities are increasingly having to deal with lawsuits in the United States.
+Van Bakel sees the pressure on these organizations growing.
+"In some media they are dismissed as terrorist organizations, and that causes major reputational damage."
+According to Van Bakel, the Netherlands is a pleasant country for philanthropic organizations to settle in.
+The regulatory burden here is relatively low for charities.
+"But that is not the most important reason.
+The Netherlands has a rich philanthropic ecosystem, which is very convenient.
+Dutch people are also exceptionally generous when it comes to charities."
+That 'ecosystem' means that relatively many charities are based in the Netherlands, which lets them more easily join forces and share experiences.
+For the Netherlands there are also some advantages to these organizations settling here.
+According to Van Bakel, it creates employment.
+"But above all, the expertise of these organizations is truly an enrichment for the Dutch philanthropic ecosystem."
+Whether all the charities will actually stay in the Netherlands is still unclear.
+"But a relocation involves a lot.
+You don't do that lightly, so I don't expect these organizations to go back very quickly either," Van Bakel foresees.
+
+[WORDDATA]
+```json
+{
+  "index": {
+    "aan": "aan",
+    "aantal": "aantal",
+    "aantallen": "aantal",
+    "aantrekkelijk": "aantrekkelijk",
+    "accountantskantoor": "accountantskantoor",
+    "afgelopen": "afgelopen",
+    "alle": "alle",
+    "als": "als",
+    "amerikaans": "Amerikaans",
+    "amerikaanse": "Amerikaans",
+    "bakel": "Bakel",
+    "belangrijk": "belangrijk",
+    "belangrijkste": "belangrijk",
+    "belastingadviseur": "belastingadviseur",
+    "betekenen": "betekenen",
+    "betekent": "betekenen",
+    "bij": "bij",
+    "bijzonder": "bijzonder",
+    "blijken": "blijken",
+    "blijkt": "blijken",
+    "blijven": "blijven",
+    "bovendien": "bovendien",
+    "creëert": "creëren",
+    "creëren": "creëren",
+    "daadwerkelijk": "daadwerkelijk",
+    "daardoor": "daardoor",
+    "dat": "dat",
+    "de": "de",
+    "delen": "delen",
+    "denken": "denken",
+    "deze": "deze",
+    "die": "die",
+    "doe": "doen",
+    "doel": "doel",
+    "doelen": "doel",
+    "doen": "doen",
+    "doneren": "doneren",
+    "druk": "druk",
+    "dus": "dus",
+    "echt": "echt",
+    "ecosysteem": "ecosysteem",
+    "een": "een",
+    "eigen": "eigen",
+    "en": "en",
+    "er": "er",
+    "erover": "erover",
+    "ervaring": "ervaring",
+    "ervaringen": "ervaring",
+    "exact": "exact",
+    "exacte": "exact",
+    "expertise": "expertise",
+    "fijn": "fijn",
+    "filantropisch": "filantropisch",
+    "filantropische": "filantropisch",
+    "fiscalist": "fiscalist",
+    "fiscalisten": "fiscalist",
+    "focussen": "focussen",
+    "gaan": "gaan",
+    "gaat": "gaan",
+    "geeft": "geven",
+    "geld": "geld",
+    "gemaakt": "maken",
+    "gendergelijkheid": "gendergelijkheid",
+    "geven": "geven",
+    "gevestigd": "vestigen",
+    "goed": "goed",
+    "goede": "goed",
+    "groot": "groot",
+    "grote": "groot",
+    "groter": "groot",
+    "handig": "handig",
+    "hebben": "hebben",
+    "heeft": "hebben",
+    "heel": "heel",
+    "het": "het",
+    "hier": "hier",
+    "ijs": "ijs",
+    "ik": "ik",
+    "in": "in",
+    "inmiddels": "inmiddels",
+    "instelling": "instelling",
+    "instellingen": "instelling",
+    "internationaal": "internationaal",
+    "internationale": "internationaal",
+    "is": "zijn",
+    "je": "je",
+    "kijken": "kijken",
+    "klimaat": "klimaat",
+    "komen": "komen",
+    "komt": "komen",
+    "krijgen": "krijgen",
+    "kunnen": "kunnen",
+    "laag": "laag",
+    "land": "land",
+    "maar": "maar",
+    "maiko": "Maiko",
+    "maken": "maken",
+    "makkelijk": "makkelijk",
+    "makkelijker": "makkelijk",
+    "media": "media",
+    "meer": "meer",
+    "met": "met",
+    "minder": "minder",
+    "moeilijk": "moeilijk",
+    "moeilijker": "moeilijk",
+    "naar": "naar",
+    "nacht": "nacht",
+    "namens": "namens",
+    "nederland": "Nederland",
+    "nederlander": "Nederlander",
+    "nederlanders": "Nederlander",
+    "nederlands": "Nederlands",
+    "nederlandse": "Nederlands",
+    "neer": "neer",
+    "neerstrijken": "neerstrijken",
+    "niet": "niet",
+    "nog": "nog",
+    "of": "of",
+    "om": "om",
+    "onderzoeker": "onderzoeker",
+    "onduidelijk": "onduidelijk",
+    "ook": "ook",
+    "op": "op",
+    "optrekken": "optrekken",
+    "organisatie": "organisatie",
+    "organisaties": "organisatie",
+    "over": "over",
+    "overwegen": "overwegen",
+    "pwc": "PwC",
+    "rechtszaak": "rechtszaak",
+    "rechtszaken": "rechtszaak",
+    "reden": "reden",
+    "regeldruk": "regeldruk",
+    "regering": "regering",
+    "relatief": "relatief",
+    "reputatieschade": "reputatieschade",
+    "rijk": "rijk",
+    "rondgang": "rondgang",
+    "samen": "samen",
+    "situatie": "situatie",
+    "snel": "snel",
+    "sommige": "sommige",
+    "staan": "staan",
+    "staat": "staan",
+    "staten": "staat",
+    "steeds": "steeds",
+    "stopgezet": "stopzetten",
+    "stopzetten": "stopzetten",
+    "strijken": "strijken",
+    "stuk": "stuk",
+    "subsidie": "subsidie",
+    "subsidies": "subsidie",
+    "te": "te",
+    "telegraaf": "Telegraaf",
+    "terroristisch": "terroristisch",
+    "terroristische": "terroristisch",
+    "terug": "terug",
+    "thuis": "thuis",
+    "tiental": "tiental",
+    "tientallen": "tiental",
+    "tijd": "tijd",
+    "tilburg": "Tilburg",
+    "trump": "Trump",
+    "uit": "uit",
+    "university": "University",
+    "vaak": "vaak",
+    "vaker": "vaak",
+    "van": "van",
+    "veel": "veel",
+    "verenigd": "verenigd",
+    "verenigde": "verenigd",
+    "verhuizen": "verhuizen",
+    "verhuizing": "verhuizing",
+    "verrijking": "verrijking",
+    "verwacht": "verwachten",
+    "verwachten": "verwachten",
+    "vestigen": "vestigen",
+    "vluchten": "vluchten",
+    "voelen": "voelen",
+    "volgens": "volgens",
+    "voor": "voor",
+    "vooral": "vooral",
+    "voordeel": "voordeel",
+    "voordelen": "voordeel",
+    "voorzien": "voorzien",
+    "voorziet": "voorzien",
+    "vraag": "vraag",
+    "vragen": "vraag",
+    "vrijgevig": "vrijgevig",
+    "vs": "VS",
+    "wat": "wat",
+    "weer": "weer",
+    "weggezet": "wegzetten",
+    "wegzetten": "wegzetten",
+    "wel": "wel",
+    "werkgelegenheid": "werkgelegenheid",
+    "worden": "worden",
+    "wordt": "worden",
+    "ze": "ze",
+    "zeggen": "zeggen",
+    "zegt": "zeggen",
+    "zich": "zich",
+    "zien": "zien",
+    "ziet": "zien",
+    "zijn": "zijn",
+    "zo": "zo",
+    "zullen": "zullen"
+  }
+}
+```
